@@ -5,7 +5,79 @@
     <title></title>
 </head>
 <body>
-    <p>This is my page</p>
-    <button type="button">Click Me!</button>
+
+    <!--jquery-->
+    <script src="jQuery/jquery-3.5.0.js"></script>
+    <script src="jQuery/jquery-3.5.0.min.js"></script>
+    <!--bootstrap-->
+    <link href="Bootstrap/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="Bootstrap/Scripts/bootstrap.min.js"></script>
+    <!--javascripts-->
+    <script src="JavaScripts/GetFlightPlans.js"></script>
+    <script src="JavaScripts/AddFlightPlan.js"></script>
+    <script src="JavaScripts/DragAndDrop.js"></script>
+
+    <!--design-->
+    <!--<p>This is my page</p>
+    <button onclick="getFlightsFunc()">Get Flights</button>
+    <table id="tblFlight">
+        <tr>
+            <th>FlightId</th>
+            <th>CompanyName</th>
+        </tr>
+    </table>-->
+
+
+    <style>
+        .flightsListContainer {
+            border: 2px solid blue;
+            height: 400px;
+        }
+
+        .mapRow {
+            border: 2px solid orange;
+            height: 500px;
+        }
+
+        .detailsRow {
+            border: 2px solid green;
+            height: 300px;
+        }
+
+        .flightsRow {
+            border: 2px solid blue;
+            height: 400px;
+        }
+
+        .emptyRow {
+            height: 50px;
+        }
+    </style>
+    <div class="row emptyRow"></div>
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-6">
+            <div class="row mapRow justify-content-center">
+                <h2>map</h2>
+            </div>
+            <div class="row detailsRow justify-content-center">
+                <h2>Flight Details</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="flightsList" class="row flightsRow justify-content-center">
+                <h2>My Flights</h2>
+                <script>
+                    var dropZone = document.getElementById("flightsList");
+                    dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
+                </script>
+            </div>
+
+            <div class="row flightsRow justify-content-center">
+                <h2>External Flights</h2>
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
 </body>
 </html>

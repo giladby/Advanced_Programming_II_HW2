@@ -25,7 +25,6 @@ namespace FlightControlWeb.Controllers
         [HttpPost]
         public FlightPlan AddFlightPlan([FromBody] FlightPlan fp)
         {
-            Console.WriteLine("enter");
             manager.AddFlightPlan(fp);
             return fp;
         }
