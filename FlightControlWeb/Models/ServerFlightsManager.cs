@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ namespace FlightControlWeb.Models
 {
     public class ServerFlightsManager
     {
+        
         private static List<FlightPlan> flightPlans = new List<FlightPlan>();
         private static Dictionary<string, FlightPlan> flightIds = new Dictionary<string, FlightPlan>();
 
@@ -42,16 +44,15 @@ namespace FlightControlWeb.Models
                     break;
                 }
             }
-            f.FlightPlanId = id;
             flightIds[id] = f;
             flightPlans.Add(f);
         }
 
         public void DeleteFlightPlan(string id)
         {
-            FlightPlan myFlightPlan = flightPlans.Where(f => f.FlightPlanId == id).FirstOrDefault();
-            if (myFlightPlan != null)
+            if (flightIds.ContainsKey(id))
             {
+                FlightPlan myFlightPlan = flightIds[id];
                 flightPlans.Remove(myFlightPlan);
                 flightIds.Remove(id);
             }
@@ -59,8 +60,11 @@ namespace FlightControlWeb.Models
        
         public FlightPlan GetFlightPlan(string id)
         {
-            FlightPlan myFlightPlan = flightPlans.Where(f => f.FlightPlanId == id).FirstOrDefault();
-            return myFlightPlan;
+            if (flightIds.ContainsKey(id))
+            {
+                return flightIds[id]; 
+            }
+            return null;
         }
 
         private Tuple<double, double> GetLocation(FlightPlan fp, DateTime dt)
@@ -98,7 +102,12 @@ namespace FlightControlWeb.Models
             Tuple<double, double> location = GetLocation(fp, dt);
             double lon = location.Item1;
             double lat = location.Item2;
-            return new Flight(fp.FlightPlanId, lon, lat, fp.Passengers, fp.CompanyName, dt, false);
+            string id = flightIds.FirstOrDefault(x => x.Value == fp).Key;
+            if(id == null)
+            {
+                return null;
+            }
+            return new Flight(id, lon, lat, fp.Passengers, fp.CompanyName, dt, false);
         }
 
         private DateTime GetEndTime(FlightPlan fp)
@@ -106,19 +115,20 @@ namespace FlightControlWeb.Models
             DateTime time = fp.InitialLocation.MyDateTime;
             foreach (FlightSegment fs in fp.Segments)
             {
-                time.AddSeconds(fs.TimespanSeconds);
+                time = time.AddSeconds(fs.TimespanSeconds);
             }
             return time;
         }
 
         public ArrayList GetFlightsByTime(DateTime dt)
         {
+            dt = dt.ToUniversalTime();
             ArrayList flights = new ArrayList();
             foreach (FlightPlan fp in flightPlans)
             {
                 if ((DateTime.Compare(dt, fp.InitialLocation.MyDateTime) >= 0) && (DateTime.Compare(dt, GetEndTime(fp)) <= 0))
                 {
-                    flights.Add(GetFlight(fp, dt));
+                   flights.Add(GetFlight(fp, dt));
                 }
             }
             return flights;

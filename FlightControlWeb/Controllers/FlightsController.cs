@@ -17,11 +17,11 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/Flights
         [HttpGet]
-        public ArrayList GetFlights([FromQuery] string relativeTo,
-            [FromQuery] string syncAll)
+        public ArrayList GetFlights([FromQuery] string relative_to,
+            [FromQuery] string sync_all)
         {
             string request = Request.QueryString.Value;
-            DateTime time = DateTime.ParseExact(relativeTo, "yyyyMMddTHH:mm:ssZ", 
+            DateTime time = DateTime.ParseExact(relative_to, "yyyy-MM-ddTHH:mm:ssZ", 
                 System.Globalization.CultureInfo.InvariantCulture);
             ArrayList flights = manager.GetFlightsByTime(time);
             if (request.Contains("sync_all"))
