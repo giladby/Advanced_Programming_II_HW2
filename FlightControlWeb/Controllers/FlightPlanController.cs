@@ -14,7 +14,7 @@ namespace FlightControlWeb.Controllers
     {
         private ServerFlightsManager manager = new ServerFlightsManager();
         
-        // GET: api/FlightPlan/5
+        // GET: api/FlightPlan/{id}
         [HttpGet("{id}", Name = "Get")]
         public FlightPlan GetFlightPlan(string id)
         {
