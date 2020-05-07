@@ -35,18 +35,18 @@
 
     new DnDFileController('body', function (files) {
         var f = files[0];
-
-        if (!f.type.match('application/json')) {
+        if (!f) {
+            return;
+        }
+        if (f.type.match('application/json')) {
+            var reader = new FileReader();
+            reader.onloadend = function (e) {
+                var result = JSON.parse(this.result);
+                AddFlightPlan(result);
+            };
+            reader.readAsText(f);
+        } else {
             alert('Please enter a JSON file!');
         }
-
-        var reader = new FileReader();
-        reader.onloadend = function (e) {
-            var result = JSON.parse(this.result);
-            console.log(result);
-            AddFlightPlan(result)
-        };
-        reader.readAsText(f);
-        //GetFlightPlans();
     });
 }

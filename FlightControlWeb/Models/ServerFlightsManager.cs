@@ -12,7 +12,6 @@ namespace FlightControlWeb.Models
         
         private static List<FlightPlan> flightPlans = new List<FlightPlan>();
         private static Dictionary<string, FlightPlan> flightIds = new Dictionary<string, FlightPlan>();
-        readonly Object myLock = new Object();
 
         private string GenerateFlightId()
         {
@@ -35,21 +34,17 @@ namespace FlightControlWeb.Models
         
         public void AddFlightPlan(FlightPlan f)
         {
-            lock (myLock)
+            string id;
+            while (true)
             {
-                string id;
-                while (true)
+                id = GenerateFlightId();
+                if (!flightIds.ContainsKey(id))
                 {
-                    id = GenerateFlightId();
-                    if (!flightIds.ContainsKey(id))
-                    {
-                        break;
-                    }
+                    break;
                 }
-                flightIds.Add(id, f);
-                flightPlans.Add(f);
             }
-            
+            flightIds.Add(id, f);
+            flightPlans.Add(f);
         }
 
         public void DeleteFlightPlan(string id)
