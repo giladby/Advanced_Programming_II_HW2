@@ -1,6 +1,7 @@
 ﻿async function FlightsLoop() {
     while (true) {
         GetFlightPlans();
+        console.log("hi");
         await Sleep(250);
     }
 }
@@ -19,6 +20,7 @@ function GetFlightPlans() {
                 if (item[0] == id) {
                     item[1] = true;
                     exist = true;
+                    ChangeAirplaneLocation(id, flight.latitude, flight.longitude);
                     return;
                 }
             });
@@ -27,11 +29,13 @@ function GetFlightPlans() {
                     "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
                 $("#flightsTableBody").append(tr);
                 dummyArr.push([id, false]);
+                AddAirplane(id, flight.latitude, flight.longitude);
             }
         });
         flightsArr.forEach(function (item) {
             if (!item[1]) {
                 $("#" + item[0]).remove();
+                DeleteAirplane(item[0]);
             } else {
                 dummyArr.push([item[0], false]);
             }
