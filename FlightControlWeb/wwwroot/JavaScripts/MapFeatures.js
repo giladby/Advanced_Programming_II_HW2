@@ -23,7 +23,6 @@
 }
 
 function AddAirplane(flightId, latitude, longitude) {
-    console.log("hi");
     var airplane = new ol.layer.Vector({
         name: flightId,
         source: new ol.source.Vector({

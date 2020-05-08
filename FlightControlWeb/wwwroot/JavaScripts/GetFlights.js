@@ -1,7 +1,6 @@
 ﻿async function FlightsLoop() {
     while (true) {
         GetFlightPlans();
-        console.log("hi");
         await Sleep(250);
     }
 }
