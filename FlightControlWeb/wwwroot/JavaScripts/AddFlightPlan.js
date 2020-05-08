@@ -1,6 +1,5 @@
 ﻿var flightPlanUrl = "../api/FlightPlan";
-function AddFlightPlan(flightPlan) {
-    //$.post(flightPlanUrl, flightPlan);
+function AddFlightPlanFunc(flightPlan) {
     $.ajax({
         type: 'post',
         url: flightPlanUrl,
