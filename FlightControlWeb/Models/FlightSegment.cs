@@ -9,7 +9,7 @@ namespace FlightControlWeb.Models
 {
     public class FlightSegment
     {
-        public FlightSegment(double longitude, double latitude, int time)
+        public FlightSegment(double longitude, double latitude, double time)
         {
             Longitude = longitude;
             Latitude = latitude;
@@ -26,6 +26,6 @@ namespace FlightControlWeb.Models
         [JsonPropertyName("latitude")]
         public double Latitude { get; set; }
         [JsonPropertyName("timespan_seconds")]
-        public int TimespanSeconds { get; set; }
+        public double TimespanSeconds { get; set; }
     }
 }

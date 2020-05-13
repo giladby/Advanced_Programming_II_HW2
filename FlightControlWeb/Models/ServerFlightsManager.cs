@@ -114,7 +114,14 @@ namespace FlightControlWeb.Models
             DateTime time = fp.InitialLocation.MyDateTime;
             foreach (FlightSegment fs in fp.Segments)
             {
-                time = time.AddSeconds(fs.TimespanSeconds);
+                try
+                {
+                    time = time.AddSeconds(fs.TimespanSeconds);
+                }
+                catch
+                {
+                    return DateTime.MaxValue;
+                }
             }
             return time;
         }
@@ -125,7 +132,8 @@ namespace FlightControlWeb.Models
             ArrayList flights = new ArrayList();
             foreach (FlightPlan fp in flightPlans)
             {
-                if ((DateTime.Compare(dt, fp.InitialLocation.MyDateTime) >= 0) && (DateTime.Compare(dt, GetEndTime(fp)) <= 0))
+                DateTime end = GetEndTime(fp);
+                if ((DateTime.Compare(dt, fp.InitialLocation.MyDateTime) >= 0) && (DateTime.Compare(dt, end) <= 0))
                 {
                    flights.Add(GetFlight(fp, dt));
                 }

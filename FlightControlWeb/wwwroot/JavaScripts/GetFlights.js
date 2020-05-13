@@ -5,9 +5,10 @@
     }
 }
 
+
 var flightsArr = [];
 function GetFlightPlans() {
-
+    
     var dateAndTime = MakeDateAndTime();
     var dummyArr = [];
     var flightUrl = "../api/Flights?relative_to=" + dateAndTime;
@@ -28,7 +29,12 @@ function GetFlightPlans() {
                     "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
                 $("#flightsTableBody").append(tr);
                 dummyArr.push([id, false]);
-                AddAirplane(id, flight.latitude, flight.longitude);
+                let source = new ol.source.Vector({
+                    features: [new ol.Feature({
+                        geometry: new ol.geom.Point(ol.proj.fromLonLat([flight.longitude, flight.latitude])),
+                    })]
+                });
+                AddAirplane(id, source, flight.isExternal, defaultAirplaneImage, defaultAirplaneScale);
             }
         });
         flightsArr.forEach(function (item) {

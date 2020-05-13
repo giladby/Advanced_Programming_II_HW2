@@ -19,6 +19,7 @@
     <script src="JavaScripts/DragAndDrop.js"></script>
     <script src="JavaScripts/DeleteFlight.js"></script>
     <script src="JavaScripts/MapFeatures.js"></script>
+    <script src="JavaScripts/GetFlightPlan.js"></script>
     <!--map-->
     <script src="OpenLayersMap/ol.js"></script>
     <!--design-->
@@ -51,6 +52,10 @@
             height: 350px !important;
             overflow: scroll;
         }
+        .myFlightDetailsTable {
+            height: 250px !important;
+            overflow: scroll;
+        }
         .map {
             height: 400px;
             width: 100%;
@@ -66,6 +71,21 @@
             </div>
             <div class="row detailsRow justify-content-center">
                 <h2>Flight Details</h2>
+                <div class="table myFlightDetailsTable">
+                    <table class="table table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Starting Location</th>
+                                <th>Ending Location</th>
+                                <th>Starting Time</th>
+                                <th>Ending Time</th>
+                                <th>Company</th>
+                                <th>Passangers</th>
+                            </tr>
+                        </thead>
+                        <tbody id="FlightDetailsBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
@@ -77,7 +97,7 @@
                             <tr>
                                 <th>Delete</th>
                                 <th>Flight ID</th>
-                                <th>Company Name</th>
+                                <th>Company</th>
                             </tr>
                         </thead>
                         <tbody id="flightsTableBody"></tbody>
@@ -95,6 +115,8 @@
         var dropZone = document.getElementById("flightsList");
         dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
         var map;
+        let defaultAirplaneImage = 'Images/airplane.png';
+        let defaultAirplaneScale = 0.05;
         DisplayMap();
         FlightsLoop();
     </script>
