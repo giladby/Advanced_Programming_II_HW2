@@ -25,25 +25,20 @@ function DisplayMap() {
     });
 
     map.on("click", function (e) {
-        let operate = false;
-
+        let isMapLayer = true;
         map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
-
-            operate = true;
-
+            isMapLayer = false;
             if (!layer.get('external')) {
-                
-                if (currentMarked != null && currentMarked.get('name') == layer.get('name')) {
-                    
+                if ((currentMarked != null) && (currentMarked.get('name') == layer.get('name'))) {
                     return;
                 }
                 UnmarkAirplane();
-                getFlightPlanFunc(layer.get('name'), layer);
+                getFlightPlanAndMark(layer.get('name'), layer);
             } else {
 
             }
         })
-        if (!operate) {
+        if (isMapLayer) {
             UnmarkAirplane();
         }
     });
@@ -78,9 +73,10 @@ function ChangeAirplaneLocation(flightId, latitude, longitude) {
 function DeleteAirplane(flightId) {
     map.getLayers().forEach(function (layer) {
         if (layer.get('name') == flightId) {
-            map.removeLayer(layer);
+            layerToDelete = layer;
         }
     })
+    map.removeLayer(layerToDelete);
 }
 
 function MarkAirplane(data, airplane) {
@@ -89,9 +85,7 @@ function MarkAirplane(data, airplane) {
     let external = airplane.get('external');
     DeleteAirplane(name);
     let newAirplane = AddAirplane(name, source, external, 'Images/markedAirplane.png', 0.1);
-
     let endTriple = getEndTriple(data);
-
     let time = convertTime(data.initial_location.date_time, 0);
 
     let tr = "<tr><td>[" + data.initial_location.latitude + "," + data.initial_location.longitude + "]</td>" +
@@ -101,7 +95,6 @@ function MarkAirplane(data, airplane) {
                 "<td>" + data.company_name + "</td>" +
             "<td>" + data.passengers + "</td></tr>";
     $("#FlightDetailsBody").append(tr);
-
     currentMarked = newAirplane;
 }
 
@@ -118,13 +111,13 @@ function UnmarkAirplane() {
     currentMarked = null;
 }
 
-function convertTime(dt, plus) {
-    dt = dt.substring(0, dt.length - 1);
-    dt = new Date(dt);
-    dt = new Date(dt.getTime() + 1000 * plus);
-    dt = new Date(dt.getTime()).toISOString();
-    dt = dt.substr(0, (dt.length - 5)) + "Z";
-    return dt;
+function convertTime(time, secondsToAdd) {
+    time = time.substring(0, time.length - 1);
+    time = new Date(time);
+    time = new Date(time.getTime() + 1000 * secondsToAdd);
+    time = new Date(time.getTime()).toISOString();
+    time = time.substr(0, (time.length - 5)) + "Z";
+    return time;
 }
 
 function getEndTriple(data) {
@@ -136,13 +129,11 @@ function getEndTriple(data) {
         longitude = segment.longitude;
         totalSeconds += segment.timespan_seconds;
     });
-
-    dt = convertTime(data.initial_location.date_time, totalSeconds);
-    
-    return [latitude, longitude, dt];
+    endTime = convertTime(data.initial_location.date_time, totalSeconds);
+    return [latitude, longitude, endTime];
 }
 
-function getFlightPlanFunc(flightId, airplane) {
+function getFlightPlanAndMark(flightId, airplane) {
     var flightPlanUrl = "../api/FlightPlan/" + flightId;
     $.get(flightPlanUrl, function (data) {
         MarkAirplane(data, airplane);
