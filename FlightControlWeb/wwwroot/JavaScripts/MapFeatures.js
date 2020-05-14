@@ -27,20 +27,37 @@ function DisplayMap() {
     map.on("click", function (e) {
         let isMapLayer = true;
         map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
+            if (layer.get('name') == 'lines') {
+                return;
+            }
             isMapLayer = false;
             if (!layer.get('external')) {
-                if ((currentMarked != null) && (currentMarked.get('name') == layer.get('name'))) {
-                    return;
-                }
-                UnmarkAirplane();
-                getFlightPlanAndMark(layer.get('name'), layer);
+                tryMarkAirplane(layer.get('name'), layer.getSource(), layer.get('external'));
             } else {
 
             }
         })
         if (isMapLayer) {
-            UnmarkAirplane();
+            UnmarkAirplane(false);
         }
+    });
+}
+
+
+function tryMarkAirplane(name, source, external) {
+    
+    if ((currentMarked != null) && (currentMarked.get('name') == name)) {
+        return;
+    }
+    UnmarkAirplane(true);
+    getFlightPlanAndMark(name, source, external);
+}
+
+function createSource(latitude, longitude) {
+    return new ol.source.Vector({
+        features: [new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])),
+        })]
     });
 }
 
@@ -70,45 +87,104 @@ function ChangeAirplaneLocation(flightId, latitude, longitude) {
     })
 }
 
-function DeleteAirplane(flightId) {
-    map.getLayers().forEach(function (layer) {
-        if (layer.get('name') == flightId) {
-            layerToDelete = layer;
-        }
-    })
+
+function DeleteAirplane(flightId, update) {
+    let layerToDelete = getLayer(flightId);
+    if (layerToDelete == currentMarked) {
+        emptyCurrentMarked(update);
+    }
     map.removeLayer(layerToDelete);
 }
 
-function MarkAirplane(data, airplane) {
-    let source = airplane.getSource();
-    let name = airplane.get('name');
-    let external = airplane.get('external');
-    DeleteAirplane(name);
+function getLayer(name) {
+    let myLayer;
+    map.getLayers().forEach(function (layer) {
+        if (layer.get('name') == name) {
+            myLayer = layer;
+        }
+    });
+    return myLayer;
+}
+
+function MarkAirplane(data, name, source, external) {
+
+    DeleteAirplane(name, true);
+    
     let newAirplane = AddAirplane(name, source, external, 'Images/markedAirplane.png', 0.1);
     let endTriple = getEndTriple(data);
-    let time = convertTime(data.initial_location.date_time, 0);
-
-    let tr = "<tr><td>[" + data.initial_location.latitude + "," + data.initial_location.longitude + "]</td>" +
-            "<td>[" + endTriple[0] + "," + endTriple[1] + "]</td>" +
-        "<td>" + data.initial_location.date_time + "</td>" +
-            "<td>" + endTriple[2] + "</td>" +
-                "<td>" + data.company_name + "</td>" +
-            "<td>" + data.passengers + "</td></tr>";
-    $("#FlightDetailsBody").append(tr);
+    let tr = "<tr id=\"flightDetailsRow\"><td>[" + data.initial_location.latitude + "," + data.initial_location.longitude + "]</td>" +
+             "<td>[" + endTriple[0] + "," + endTriple[1] + "]</td>" +
+             "<td>" + data.initial_location.date_time + "</td>" +
+             "<td>" + endTriple[2] + "</td>" +
+             "<td>" + data.company_name + "</td>" +
+             "<td>" + data.passengers + "</td></tr>";
+    let flightDetailsRow = document.getElementById("flightDetailsRow");
+    if (flightDetailsRow) {
+        $("#flightDetailsRow").replaceWith(tr);
+    } else {
+        $("#FlightDetailsBody").append(tr);
+    }
+    
+    let myFlightsRow = document.getElementById(name);
+    myFlightsRow.style.backgroundColor = "yellow";
+    drawRouteLines(data);
     currentMarked = newAirplane;
 }
 
-function UnmarkAirplane() {
+function UnmarkAirplane(update) {
     if (currentMarked == null) {
         return;
     }
-    $("#FlightDetailsBody").empty();
-
     let name = currentMarked.get('name');
-    DeleteAirplane(name);
-    AddAirplane(name, currentMarked.getSource(), currentMarked.get('external'), defaultAirplaneImage, defaultAirplaneScale);
+    let previous = currentMarked;
+    DeleteAirplane(name, update);
+    AddAirplane(name, previous.getSource(), previous.get('external'), defaultAirplaneImage, defaultAirplaneScale);
+}
 
+function emptyCurrentMarked(update) {
+    if (!update) {
+        $("#FlightDetailsBody").empty();
+    }
+    let id = currentMarked.get('name');
+    let myFlightsRow = document.getElementById(id);
+    myFlightsRow.style.backgroundColor = "";
+    removeRouteLines();
     currentMarked = null;
+}
+
+function drawRouteLines(data) {
+    let pointsArr = [];
+    pointsArr.push(ol.proj.fromLonLat([data.initial_location.longitude, data.initial_location.latitude]));
+    data.segments.forEach(function (segment) {
+        pointsArr.push(ol.proj.fromLonLat([segment.longitude, segment.latitude]));
+    });
+
+    var lineStyle = [
+        new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'blue',
+                lineDash: [4, 8],
+                lineCap: 'square',
+                width: 5
+            })
+        })
+    ];
+    var layer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+            features: [new ol.Feature({
+                geometry: new ol.geom.LineString(pointsArr)
+            })]
+        }),
+        name: 'lines'
+    });
+    layer.setStyle(lineStyle);
+    map.getLayers().insertAt(1, layer);
+
+}
+
+function removeRouteLines() {
+    let layerToDelete = getLayer("lines");
+    map.removeLayer(layerToDelete);
 }
 
 function convertTime(time, secondsToAdd) {
@@ -133,9 +209,9 @@ function getEndTriple(data) {
     return [latitude, longitude, endTime];
 }
 
-function getFlightPlanAndMark(flightId, airplane) {
+function getFlightPlanAndMark(flightId, source, external) {
     var flightPlanUrl = "../api/FlightPlan/" + flightId;
     $.get(flightPlanUrl, function (data) {
-        MarkAirplane(data, airplane);
+        MarkAirplane(data, flightId, source, external);
     });
 }
