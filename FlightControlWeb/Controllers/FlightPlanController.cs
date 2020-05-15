@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FlightControlWeb.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace FlightControlWeb.Controllers
 {
@@ -12,8 +13,13 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class FlightPlanController : ControllerBase
     {
-        private ServerFlightsManager manager = new ServerFlightsManager();
-        
+        private MyFlightsManager manager;
+
+        public FlightPlanController(MyFlightsManager m)
+        {
+            manager = m;
+        }
+
         // GET: api/FlightPlan/{id}
         [HttpGet("{id}", Name = "Get")]
         public FlightPlan GetFlightPlan(string id)

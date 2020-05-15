@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,11 +8,59 @@ using System.Threading.Tasks;
 
 namespace FlightControlWeb.Models
 {
-    public class ServerFlightsManager
+    public class MyFlightsManager
     {
         
-        private static List<FlightPlan> flightPlans = new List<FlightPlan>();
-        private static Dictionary<string, FlightPlan> flightIds = new Dictionary<string, FlightPlan>();
+        private IMemoryCache myCache;
+
+        public MyFlightsManager(IMemoryCache cache)
+        {
+            myCache = cache;
+        }
+
+        private void setCache(Dictionary<string, FlightPlan> flightIds, List<FlightPlan> flightPlans)
+        {
+            myCache.Set("flightPlans", flightPlans);
+            myCache.Set("flightIds", flightIds);
+        }
+        private Dictionary<string, FlightPlan> getFlightIds()
+        {
+            Dictionary<string, FlightPlan> flightIds = new Dictionary<string, FlightPlan>();
+            if (!myCache.TryGetValue("flightIds", out flightIds))
+            {
+                if (flightIds == null)
+                {
+                    flightIds = new Dictionary<string, FlightPlan>();
+                }
+            }
+            myCache.Set("flightIds", flightIds);
+            return flightIds;
+        }
+
+        private List<FlightPlan> getFlightPlans()
+        {
+            List<FlightPlan> flightPlans = new List<FlightPlan>();
+            if (!myCache.TryGetValue("flightPlans", out flightPlans))
+            {
+                if (flightPlans == null)
+                {
+                    flightPlans = new List<FlightPlan>();
+                }
+            }
+            myCache.Set("flightPlans", flightPlans);
+            return flightPlans;
+        }
+
+        private void addFlightPlanToCache(FlightPlan fp, string id)
+        {
+            List<FlightPlan> flightPlans = getFlightPlans();
+            Dictionary<string, FlightPlan> flightIds = getFlightIds();
+            
+            flightIds.Add(id, fp);
+            flightPlans.Add(fp);
+
+            setCache(flightIds, flightPlans);
+        }
 
         private string GenerateFlightId()
         {
@@ -32,9 +81,10 @@ namespace FlightControlWeb.Models
             return id;
         }
         
-        public void AddFlightPlan(FlightPlan f)
+        public void AddFlightPlan(FlightPlan fp)
         {
             string id;
+            Dictionary<string, FlightPlan> flightIds = getFlightIds();
             while (true)
             {
                 id = GenerateFlightId();
@@ -43,22 +93,26 @@ namespace FlightControlWeb.Models
                     break;
                 }
             }
-            flightIds.Add(id, f);
-            flightPlans.Add(f);
+            addFlightPlanToCache(fp, id);
         }
 
         public void DeleteFlightPlan(string id)
         {
+            List<FlightPlan> flightPlans = getFlightPlans();
+            Dictionary<string, FlightPlan> flightIds = getFlightIds();
+
             if (flightIds.ContainsKey(id))
             {
                 FlightPlan myFlightPlan = flightIds[id];
                 flightPlans.Remove(myFlightPlan);
                 flightIds.Remove(id);
+                setCache(flightIds, flightPlans);
             }
         }
        
         public FlightPlan GetFlightPlan(string id)
         {
+            Dictionary<string, FlightPlan> flightIds = getFlightIds();
             if (flightIds.ContainsKey(id))
             {
                 return flightIds[id]; 
@@ -101,6 +155,7 @@ namespace FlightControlWeb.Models
             Tuple<double, double> location = GetLocation(fp, dt);
             double lon = location.Item1;
             double lat = location.Item2;
+            Dictionary<string, FlightPlan> flightIds = getFlightIds();
             string id = flightIds.FirstOrDefault(x => x.Value == fp).Key;
             if(id == null)
             {
@@ -130,6 +185,7 @@ namespace FlightControlWeb.Models
         {
             dt = dt.ToUniversalTime();
             ArrayList flights = new ArrayList();
+            List<FlightPlan> flightPlans = getFlightPlans();
             foreach (FlightPlan fp in flightPlans)
             {
                 DateTime end = GetEndTime(fp);

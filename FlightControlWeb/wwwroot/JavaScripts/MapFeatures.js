@@ -26,13 +26,15 @@ function DisplayMap() {
 
     map.on("click", function (e) {
         let isMapLayer = true;
+        let found = false;
         map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
-            if (layer.get('name') == 'lines') {
+            if (layer.get('name') == 'lines' || found) {
                 return;
             }
             isMapLayer = false;
             if (!layer.get('external')) {
                 tryMarkAirplane(layer.get('name'), layer.getSource(), layer.get('external'));
+                found = true;
             } else {
 
             }
@@ -101,6 +103,7 @@ function getLayer(name) {
     map.getLayers().forEach(function (layer) {
         if (layer.get('name') == name) {
             myLayer = layer;
+            return;
         }
     });
     return myLayer;
@@ -191,6 +194,9 @@ function convertTime(time, secondsToAdd) {
     time = time.substring(0, time.length - 1);
     time = new Date(time);
     time = new Date(time.getTime() + 1000 * secondsToAdd);
+    if (isNaN(time.getTime())) {
+        return "Ending time exceeded last date possible";
+    }
     time = new Date(time.getTime()).toISOString();
     time = time.substr(0, (time.length - 5)) + "Z";
     return time;
