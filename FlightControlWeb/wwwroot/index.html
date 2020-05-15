@@ -41,10 +41,19 @@
         .flightsRow {
             border: 2px solid blue;
             height: 400px;
+            z-index : 1;
         }
 
         .emptyRow {
             height: 50px;
+        }
+
+        .img-fluid {
+            z-index: 2;
+            height: 400.5px ;
+            right: 0.7px ;
+            position: absolute;
+
         }
 
         .myFlightsTable {
@@ -88,6 +97,9 @@
             </div>
         </div>
         <div class="col-md-4">
+            <div id="dragAndDropImage">
+                <img src="Images/dragAndDrop.png" class="img-fluid img-thumbnail" alt="Chania">
+            </div>
             <div id="flightsList" class="row flightsRow justify-content-center">
                 <h2>My Flights</h2>
                 <div id="flightsTable" class="table myFlightsTable">
@@ -116,6 +128,8 @@
         let map;
         let defaultAirplaneImage = 'Images/airplane.png';
         let defaultAirplaneScale = 0.05;
+        var image = document.getElementById("dragAndDropImage");
+        image.style.visibility = "hidden";
         DisplayMap();
         FlightsLoop();
     </script>

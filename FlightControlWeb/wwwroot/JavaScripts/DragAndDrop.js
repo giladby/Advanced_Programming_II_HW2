@@ -1,9 +1,11 @@
 ﻿function DragAndDropFileController(selector, onDropCallback) {
     var el_ = document.getElementById("flightsList");
+    var image = document.getElementById("dragAndDropImage");
     this.dragenter = function (e) {
         e.stopPropagation();
         e.preventDefault();
-        el_.classList.add('dropping');
+        image.style.visibility = "visible";
+        image.classList.add('dropping');
     };
     this.dragover = function (e) {
         e.stopPropagation();
@@ -12,19 +14,21 @@
     this.dragleave = function (e) {
         e.stopPropagation();
         e.preventDefault();
+        image.style.visibility = "hidden";
+        
     };
     this.drop = function (e) {
         e.stopPropagation();
         e.preventDefault();
-
-        el_.classList.remove('dropping');
+        image.style.visibility = "hidden";
+        image.classList.remove('dropping');
 
         onDropCallback(e.dataTransfer.files, e);
     };
     el_.addEventListener('dragenter', this.dragenter, false);
-    el_.addEventListener('dragover', this.dragover, false);
-    el_.addEventListener('dragleave', this.dragleave, false);
-    el_.addEventListener('drop', this.drop, false);
+    image.addEventListener('dragover', this.dragover, false);
+    image.addEventListener('dragleave', this.dragleave, false);
+    image.addEventListener('drop', this.drop, false);
 }
 
 function DragAndDropFunc() {
