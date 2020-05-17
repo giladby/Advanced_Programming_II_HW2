@@ -29,6 +29,7 @@ namespace FlightControlWeb
             services.AddMemoryCache();
             services.AddControllers();
             services.AddSingleton<MyFlightsManager>();
+            services.AddSingleton<ServersManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

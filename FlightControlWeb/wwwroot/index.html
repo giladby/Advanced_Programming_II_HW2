@@ -124,7 +124,7 @@
     <!--functionality-->
     <script>
         var dropZone = document.getElementById("flightsList");
-        dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
+        dropZone.addEventListener('dragleave', () => DragAndDropFunc(), false);
         let map;
         let defaultAirplaneImage = 'Images/airplane.png';
         let defaultAirplaneScale = 0.05;

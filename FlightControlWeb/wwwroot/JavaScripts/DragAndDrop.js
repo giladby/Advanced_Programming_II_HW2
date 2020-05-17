@@ -22,7 +22,6 @@
         e.preventDefault();
         image.style.visibility = "hidden";
         image.classList.remove('dropping');
-
         onDropCallback(e.dataTransfer.files, e);
     };
     el_.addEventListener('dragenter', this.dragenter, false);
@@ -31,7 +30,7 @@
     image.addEventListener('drop', this.drop, false);
 }
 
-function DragAndDropFunc() {
+async function DragAndDropFunc() {
     new DragAndDropFileController('body', function (files) {
         var f = files[0];
         if (!f) {
@@ -40,8 +39,12 @@ function DragAndDropFunc() {
         if (f.type.match('application/json')) {
             var reader = new FileReader();
             reader.onloadend = function (e) {
-                var result = JSON.parse(this.result);
-                AddFlightPlanFunc(result);
+                try {
+                    var result = JSON.parse(this.result);
+                    AddFlightPlanFunc(result);
+                } catch {
+                    alert('Please enter a valid JSON file');
+                }
             };
             reader.readAsText(f);
         } else {

@@ -14,11 +14,14 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class FlightsController : ControllerBase
     {
-        private MyFlightsManager manager;
+        private MyFlightsManager myFlightsManager;
+        private ServersManager serversManager;
 
-        public FlightsController(MyFlightsManager m)
+        public FlightsController(MyFlightsManager fm, ServersManager sm)
         {
-            manager = m;
+            myFlightsManager = fm;
+            serversManager = sm;
+
         }
 
         // GET: api/Flights
@@ -26,13 +29,25 @@ namespace FlightControlWeb.Controllers
         public ArrayList GetFlights([FromQuery] string relative_to,
             [FromQuery] string sync_all)
         {
+            ArrayList serverFlights;
             string request = Request.QueryString.Value;
             DateTime time = DateTime.ParseExact(relative_to, "yyyy-MM-ddTHH:mm:ssZ", 
                 System.Globalization.CultureInfo.InvariantCulture);
-            ArrayList flights = manager.GetFlightsByTime(time);
+            ArrayList flights = myFlightsManager.GetFlightsByTime(time);
             if (request.Contains("sync_all"))
             {
-                
+                List<Server> serversList = serversManager.GetServersList();
+                foreach (Server server in serversList)
+                {
+                    //serverFlights = ..
+                    foreach (Flight f in serverFlights)
+                    {
+                        f.IsExternal = true;
+                        flights.Add(f);
+                    }
+
+
+                }
             }
             return flights;
         }
@@ -41,7 +56,7 @@ namespace FlightControlWeb.Controllers
         [HttpDelete("{id}")]
         public void DeleteFlight(string id)
         {
-            manager.DeleteFlightPlan(id);
+            myFlightsManager.DeleteFlightPlan(id);
         }
     }
 }

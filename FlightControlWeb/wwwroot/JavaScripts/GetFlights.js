@@ -1,14 +1,12 @@
 ﻿async function FlightsLoop() {
     while (true) {
         GetFlightPlans();
-        await Sleep(250);
+        await Sleep(500);
     }
 }
 
-
 var flightsArr = [];
 function GetFlightPlans() {
-    
     var dateAndTime = MakeDateAndTime();
     var dummyArr = [];
     var flightUrl = "../api/Flights?relative_to=" + dateAndTime;

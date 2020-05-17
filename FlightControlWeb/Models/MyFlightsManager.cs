@@ -23,6 +23,7 @@ namespace FlightControlWeb.Models
             myCache.Set("flightPlans", flightPlans);
             myCache.Set("flightIds", flightIds);
         }
+
         private Dictionary<string, FlightPlan> getFlightIds()
         {
             Dictionary<string, FlightPlan> flightIds = new Dictionary<string, FlightPlan>();
