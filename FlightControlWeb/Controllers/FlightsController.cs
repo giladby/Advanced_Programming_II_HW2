@@ -29,25 +29,14 @@ namespace FlightControlWeb.Controllers
         public ArrayList GetFlights([FromQuery] string relative_to,
             [FromQuery] string sync_all)
         {
-            ArrayList serverFlights;
+            
             string request = Request.QueryString.Value;
             DateTime time = DateTime.ParseExact(relative_to, "yyyy-MM-ddTHH:mm:ssZ", 
                 System.Globalization.CultureInfo.InvariantCulture);
             ArrayList flights = myFlightsManager.GetFlightsByTime(time);
             if (request.Contains("sync_all"))
             {
-                List<Server> serversList = serversManager.GetServersList();
-                foreach (Server server in serversList)
-                {
-                    //serverFlights = ..
-                    foreach (Flight f in serverFlights)
-                    {
-                        f.IsExternal = true;
-                        flights.Add(f);
-                    }
-
-
-                }
+                flights.AddRange(serversManager.GetExternalFlights(time));
             }
             return flights;
         }

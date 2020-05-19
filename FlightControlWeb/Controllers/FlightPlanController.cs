@@ -13,25 +13,33 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class FlightPlanController : ControllerBase
     {
-        private MyFlightsManager manager;
+        private MyFlightsManager myFlightsManager;
+        private ServersManager serversManager;
 
-        public FlightPlanController(MyFlightsManager m)
+        public FlightPlanController(MyFlightsManager fm, ServersManager sm)
         {
-            manager = m;
+            myFlightsManager = fm;
+            serversManager = sm;
+
         }
 
         // GET: api/FlightPlan/{id}
         [HttpGet("{id}", Name = "Get")]
         public FlightPlan GetFlightPlan(string id)
         {
-            return manager.GetFlightPlan(id);
+            FlightPlan fp = myFlightsManager.GetFlightPlan(id);
+            if(fp != null)
+            {
+                fp = serversManager.GetExternalPlan(id);
+            }
+            return fp;
         }
 
         // POST: api/FlightPlan
         [HttpPost]
         public FlightPlan AddFlightPlan([FromBody] FlightPlan fp)
         {
-            manager.AddFlightPlan(fp);
+            myFlightsManager.AddFlightPlan(fp);
             return fp;
         }
     }

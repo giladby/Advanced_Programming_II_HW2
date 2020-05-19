@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
 using System.Threading.Tasks;
+using System.Collections;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json;
+using System.Globalization;
 
 namespace FlightControlWeb.Models
 {
@@ -15,6 +20,67 @@ namespace FlightControlWeb.Models
             myCache = cache;
         }
 
+        public FlightPlan GetExternalPlan(string id)
+        {
+            Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
+            if(externalFlightIds.ContainsKey(id))
+            {
+                Server server = externalFlightIds[id];
+                FlightPlan fp = GetPlanFromServer(server, id);
+                return fp;
+            }
+            return null;
+        }
+
+        private string GetSerialzedObject(string url)
+        {
+            WebRequest requestObject = WebRequest.Create(url);
+            requestObject.Method = "GET";
+            HttpWebResponse responseObject = null;
+            responseObject = (HttpWebResponse)requestObject.GetResponse();
+            string result = null;
+            using (Stream stream = responseObject.GetResponseStream())
+            {
+                StreamReader sr = new StreamReader(stream);
+                result = sr.ReadToEnd();
+                sr.Close();
+            }
+            return result;
+        }
+        
+        private FlightPlan GetPlanFromServer(Server s, string id)
+        {
+            string url = s.ServerURL + "/api/FlightPlan/" + id;
+            string result = GetSerialzedObject(url);
+            return JsonConvert.DeserializeObject<FlightPlan>(result); 
+        }
+
+        private ArrayList GetFlightsFromServer(DateTime dt, Server s)
+        {
+            string dtString = dt.ToString("s", DateTimeFormatInfo.InvariantInfo) + "Z";
+            string url = s.ServerURL + "/api/Flights?relative_to=" + dtString;
+            string result = GetSerialzedObject(url);
+            return JsonConvert.DeserializeObject<ArrayList>(result);
+        }
+
+        public ArrayList GetExternalFlights(DateTime dt)
+        {
+            ArrayList myExternalFlights = new ArrayList();
+            List<Server> serversList = GetServersList();
+            Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
+            foreach (Server server in serversList)
+            {
+                ArrayList serverFlights = GetFlightsFromServer(dt, server);
+                foreach (Flight f in serverFlights)
+                {
+                    f.IsExternal = true;
+                    myExternalFlights.Add(f);
+                    externalFlightIds.Add(f.FlightId, server);
+                }
+            }
+            SaveExternalIds(externalFlightIds);
+            return myExternalFlights;
+        }
 
         public List<Server> GetServersList()
         {
@@ -26,11 +92,11 @@ namespace FlightControlWeb.Models
                     serversList = new List<Server>();
                 }
             }
-            myCache.Set("serversList", serversList);
+            SaveServersList(serversList);
             return serversList;
         }
 
-        private Dictionary<string, Server> GetExternalFlightIds()
+        public Dictionary<string, Server> GetExternalFlightIds()
         {
             Dictionary<string, Server> externalFlightIds = new Dictionary<string, Server>();
             if (!myCache.TryGetValue("externalFlightIds", out externalFlightIds))
@@ -40,16 +106,24 @@ namespace FlightControlWeb.Models
                     externalFlightIds = new Dictionary<string, Server>();
                 }
             }
-            myCache.Set("externalFlightIds", externalFlightIds);
+            SaveExternalIds(externalFlightIds);
             return externalFlightIds;
         }
 
         public void AddServer(Server server) {
             List<Server> serversList = GetServersList();
-
             serversList.Add(server);
+            SaveServersList(serversList);
+        }
 
+        private void SaveServersList(List<Server> serversList)
+        {
             myCache.Set("serversList", serversList);
+        }
+
+        private void SaveExternalIds(Dictionary<string, Server> externalFlightIds)
+        {
+            myCache.Set("externalFlightIds", externalFlightIds);
         }
 
         public void DeleteServer(string id) {
@@ -71,6 +145,8 @@ namespace FlightControlWeb.Models
                 serversList.Remove(serverToDelete);
                 string flightId = dictInverse[serverToDelete];
                 externalFlightIds.Remove(flightId);
+                SaveServersList(serversList);
+                SaveExternalIds(externalFlightIds);
             }
         }
     }
