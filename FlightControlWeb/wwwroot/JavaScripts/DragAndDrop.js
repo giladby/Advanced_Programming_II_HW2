@@ -30,7 +30,7 @@
     image.addEventListener('drop', this.drop, false);
 }
 
-async function DragAndDropFunc() {
+function DragAndDropFunc() {
     new DragAndDropFileController('body', function (files) {
         var f = files[0];
         if (!f) {

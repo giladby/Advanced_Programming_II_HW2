@@ -28,7 +28,7 @@ namespace FlightControlWeb.Controllers
         public FlightPlan GetFlightPlan(string id)
         {
             FlightPlan fp = myFlightsManager.GetFlightPlan(id);
-            if(fp != null)
+            if(fp == null)
             {
                 fp = serversManager.GetExternalPlan(id);
             }

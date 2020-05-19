@@ -9,7 +9,7 @@ var flightsArr = [];
 function GetFlightPlans() {
     var dateAndTime = MakeDateAndTime();
     var dummyArr = [];
-    var flightUrl = "../api/Flights?relative_to=" + dateAndTime;
+    var flightUrl = "../api/Flights?relative_to=" + dateAndTime + "&sync_all";
     $.get(flightUrl, function (data) {
         data.forEach(function (flight) {
             var id = flight.flightId;
@@ -26,10 +26,18 @@ function GetFlightPlans() {
                 }
             });
             if (!exist) {
-                var tr = "<tr id=\"" + id + "\"><td><input type =\"button\" value=\"X\" onclick=\"deleteByButton('"
-                    + id + "')\"/></td>" +
-                    "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
-                $("#flightsTableBody").append(tr);
+                if (external) {
+                    var tr = "<tr id=\"" + id + "\">" +
+                        "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
+                    $("#externalTableBody").append(tr);
+                    console.log(tr);
+                } else {
+                    var tr = "<tr id=\"" + id + "\"><td><input type =\"button\" value=\"X\" onclick=\"deleteByButton('"
+                        + id + "')\"/></td>" +
+                        "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
+                    $("#flightsTableBody").append(tr);
+                }
+                
                 let source = createSource(latitude, longitude);
                 let row = document.getElementById(id);
                 row.onclick = function () {

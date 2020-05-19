@@ -60,6 +60,12 @@
             height: 350px !important;
             overflow: scroll;
         }
+
+        .myExternalTable {
+            height: 350px !important;
+            overflow: scroll;
+        }
+
         .myFlightDetailsTable {
             height: 250px !important;
             overflow: scroll;
@@ -117,6 +123,17 @@
             </div>
             <div class="row flightsRow justify-content-center">
                 <h2>External Flights</h2>
+                <div id="externalTable" class="table myExternalTable">
+                    <table class="table table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Flight ID</th>
+                                <th>Company</th>
+                            </tr>
+                        </thead>
+                        <tbody id="externalTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div class="col-md-1"></div>
@@ -124,7 +141,7 @@
     <!--functionality-->
     <script>
         var dropZone = document.getElementById("flightsList");
-        dropZone.addEventListener('dragleave', () => DragAndDropFunc(), false);
+        dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
         let map;
         let defaultAirplaneImage = 'Images/airplane.png';
         let defaultAirplaneScale = 0.05;

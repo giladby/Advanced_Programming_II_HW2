@@ -60,7 +60,8 @@ namespace FlightControlWeb.Models
             string dtString = dt.ToString("s", DateTimeFormatInfo.InvariantInfo) + "Z";
             string url = s.ServerURL + "/api/Flights?relative_to=" + dtString;
             string result = GetSerialzedObject(url);
-            return JsonConvert.DeserializeObject<ArrayList>(result);
+            List<Flight> list = JsonConvert.DeserializeObject<List<Flight>>(result);
+            return new ArrayList(list);
         }
 
         public ArrayList GetExternalFlights(DateTime dt)
@@ -75,7 +76,8 @@ namespace FlightControlWeb.Models
                 {
                     f.IsExternal = true;
                     myExternalFlights.Add(f);
-                    externalFlightIds.Add(f.FlightId, server);
+
+                    externalFlightIds[f.FlightId] = server;
                 }
             }
             SaveExternalIds(externalFlightIds);
@@ -142,11 +144,14 @@ namespace FlightControlWeb.Models
             }
             if (serverToDelete != null)
             {
+                if(dictInverse.ContainsKey(serverToDelete))
+                {
+                    string flightId = dictInverse[serverToDelete];
+                    externalFlightIds.Remove(flightId);
+                    SaveExternalIds(externalFlightIds);
+                }
                 serversList.Remove(serverToDelete);
-                string flightId = dictInverse[serverToDelete];
-                externalFlightIds.Remove(flightId);
                 SaveServersList(serversList);
-                SaveExternalIds(externalFlightIds);
             }
         }
     }
