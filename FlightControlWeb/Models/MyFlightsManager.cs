@@ -98,8 +98,9 @@ namespace FlightControlWeb.Models
             addFlightPlanToCache(fp, id);
         }
 
-        public void DeleteFlightPlan(string id)
+        public bool DeleteFlightPlan(string id)
         {
+            bool status = false;
             List<FlightPlan> flightPlans = getFlightPlans();
             Dictionary<string, FlightPlan> flightIds = getFlightIds();
 
@@ -109,7 +110,9 @@ namespace FlightControlWeb.Models
                 flightPlans.Remove(myFlightPlan);
                 flightIds.Remove(id);
                 setCache(flightIds, flightPlans);
+                status = true;
             }
+            return status;
         }
        
         public FlightPlan GetFlightPlan(string id)
@@ -185,7 +188,6 @@ namespace FlightControlWeb.Models
 
         public ArrayList GetFlightsByTime(DateTime dt)
         {
-            dt = dt.ToUniversalTime();
             ArrayList flights = new ArrayList();
             List<FlightPlan> flightPlans = getFlightPlans();
             foreach (FlightPlan fp in flightPlans)

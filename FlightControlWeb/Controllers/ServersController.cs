@@ -22,23 +22,29 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/Servers
         [HttpGet]
-        public List<Server> GetServers()
+        public ActionResult GetServers()
         {
-            return manager.GetServersList();
+            return Ok(manager.GetServersList());
         }
 
         // POST: api/Servers
         [HttpPost]
-        public void AddServer([FromBody] Server server)
+        public ActionResult AddServer([FromBody] Server server)
         {
             manager.AddServer(server);
+            return Ok();
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void Delete(string id)
+        public ActionResult Delete(string id)
         {
-            manager.DeleteServer(id);
+            
+            if(manager.DeleteServer(id))
+            {
+                return Ok();
+            }
+            return NotFound();
         }
     }
 }

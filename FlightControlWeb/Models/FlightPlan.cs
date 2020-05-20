@@ -27,13 +27,19 @@ namespace FlightControlWeb.Models
         }
 
         [JsonPropertyName("passengers")]
+        [JsonProperty("passengers")]
         public int Passengers { get; set; }
-        [DataMember]
+     
         [JsonPropertyName("company_name")]
+        [JsonProperty("company_name")]
         public string CompanyName { get; set; }
+
         [JsonPropertyName("initial_location")]
+        [JsonProperty("initial_location")]
         public FlightLocation InitialLocation { get; set;}
+
         [JsonPropertyName("segments")]
+        [JsonProperty("segments")]
         public List<FlightSegment> Segments { get; set; }
     }
 }

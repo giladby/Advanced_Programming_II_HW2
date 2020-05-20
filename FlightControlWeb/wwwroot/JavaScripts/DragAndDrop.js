@@ -43,12 +43,12 @@ function DragAndDropFunc() {
                     var result = JSON.parse(this.result);
                     AddFlightPlanFunc(result);
                 } catch {
-                    alert('Please enter a valid JSON file');
+                    printError('Please enter a valid JSON file');
                 }
             };
             reader.readAsText(f);
         } else {
-            alert('Please enter a JSON file!');
+            printError('Please enter a JSON file!');
         }
     });
 }

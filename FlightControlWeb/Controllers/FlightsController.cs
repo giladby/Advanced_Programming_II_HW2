@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FlightControlWeb.Models;
 using Microsoft.AspNetCore.Http;
@@ -21,31 +22,42 @@ namespace FlightControlWeb.Controllers
         {
             myFlightsManager = fm;
             serversManager = sm;
-
         }
 
         // GET: api/Flights
         [HttpGet]
-        public ArrayList GetFlights([FromQuery] string relative_to,
+        public async Task<ActionResult> GetFlights([FromQuery] string relative_to,
             [FromQuery] string sync_all)
         {
             
-            string request = Request.QueryString.Value;
-            DateTime time = DateTime.ParseExact(relative_to, "yyyy-MM-ddTHH:mm:ssZ", 
-                System.Globalization.CultureInfo.InvariantCulture);
-            ArrayList flights = myFlightsManager.GetFlightsByTime(time);
-            if (request.Contains("sync_all"))
+            try
             {
-                flights.AddRange(serversManager.GetExternalFlights(time));
+                string request = Request.QueryString.Value;
+                DateTime time = DateTime.ParseExact(relative_to, "yyyy-MM-ddTHH:mm:ssZ",
+                System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
+                ArrayList flights = myFlightsManager.GetFlightsByTime(time);
+                if (request.Contains("sync_all"))
+                {
+                    ArrayList externals = await Task.Run(() => serversManager.GetExternalFlights(time));
+                    flights.AddRange(externals);
+                }
+                return Ok(flights);
             }
-            return flights;
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void DeleteFlight(string id)
+        public ActionResult DeleteFlight(string id)
         {
-            myFlightsManager.DeleteFlightPlan(id);
+            if (myFlightsManager.DeleteFlightPlan(id))
+            {
+                return Ok();
+            }
+            return NotFound();
         }
     }
 }

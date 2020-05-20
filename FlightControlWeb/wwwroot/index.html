@@ -19,10 +19,24 @@
     <script src="JavaScripts/DragAndDrop.js"></script>
     <script src="JavaScripts/DeleteFlight.js"></script>
     <script src="JavaScripts/MapFeatures.js"></script>
+    <script src="JavaScripts/Utils.js"></script>
     <!--map-->
     <script src="OpenLayersMap/ol.js"></script>
     <!--design-->
     <style>
+
+        .errorMessage {
+            padding: 20px;
+            background-color: #f44336; /* Red */
+            color: white;
+            margin-bottom: 15px;
+            opacity: 1;
+            z-index: 3;
+            position: absolute;
+            left: 50%;
+            transition: opacity 0.6s; /* 600ms to fade out */
+        }
+
         .flightsListContainer {
             border: 2px solid blue;
             height: 400px;
@@ -41,7 +55,7 @@
         .flightsRow {
             border: 2px solid blue;
             height: 400px;
-            z-index : 1;
+            z-index: 1;
         }
 
         .emptyRow {
@@ -50,10 +64,9 @@
 
         .img-fluid {
             z-index: 2;
-            height: 400.5px ;
-            right: 0.7px ;
+            height: 400.5px;
+            right: 0.7px;
             position: absolute;
-
         }
 
         .myFlightsTable {
@@ -70,11 +83,13 @@
             height: 250px !important;
             overflow: scroll;
         }
+
         .map {
             height: 400px;
             width: 100%;
         }
     </style>
+    <div class="errorMessage" id="myErrorMsg"></div>
     <div class="row emptyRow"></div>
     <div class="row">
         <div class="col-md-1"></div>
@@ -140,13 +155,18 @@
     </div>
     <!--functionality-->
     <script>
+        var image = document.getElementById("dragAndDropImage");
+        image.style.visibility = "hidden";
+        var msg = document.getElementById("myErrorMsg");
+        msg.style.visibility = "hidden";        
+
         var dropZone = document.getElementById("flightsList");
         dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
         let map;
         let defaultAirplaneImage = 'Images/airplane.png';
         let defaultAirplaneScale = 0.05;
-        var image = document.getElementById("dragAndDropImage");
-        image.style.visibility = "hidden";
+        
+        
         DisplayMap();
         FlightsLoop();
     </script>

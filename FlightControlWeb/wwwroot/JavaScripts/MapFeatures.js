@@ -32,12 +32,8 @@ function DisplayMap() {
                 return;
             }
             isMapLayer = false;
-            if (!layer.get('external')) {
-                tryMarkAirplane(layer.get('name'), layer.getSource(), layer.get('external'));
-                found = true;
-            } else {
-
-            }
+            tryMarkAirplane(layer.get('name'), layer.getSource(), layer.get('external'));
+            found = true;
         })
         if (isMapLayer) {
             UnmarkAirplane(false);
@@ -218,6 +214,9 @@ function getEndTriple(data) {
 function getFlightPlanAndMark(flightId, source, external) {
     var flightPlanUrl = "../api/FlightPlan/" + flightId;
     $.get(flightPlanUrl, function (data) {
+        if (data == null) {
+            return;
+        }
         MarkAirplane(data, flightId, source, external);
     });
 }

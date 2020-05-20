@@ -1,21 +1,22 @@
 ﻿async function FlightsLoop() {
     while (true) {
-        GetFlightPlans();
+        GetFlightsFunc();
         await Sleep(500);
     }
 }
 
 var flightsArr = [];
-function GetFlightPlans() {
+function GetFlightsFunc() {
     var dateAndTime = MakeDateAndTime();
     var dummyArr = [];
     var flightUrl = "../api/Flights?relative_to=" + dateAndTime + "&sync_all";
     $.get(flightUrl, function (data) {
         data.forEach(function (flight) {
-            var id = flight.flightId;
+            var id = flight.flight_id;
             let latitude = flight.latitude;
             let longitude = flight.longitude;
-            let external = flight.isExternal;
+            let external = flight.is_external;
+            let company = flight.company_name;
             var exist = false;
             flightsArr.forEach(function (item) {
                 if (item[0] == id) {
@@ -28,13 +29,13 @@ function GetFlightPlans() {
             if (!exist) {
                 if (external) {
                     var tr = "<tr id=\"" + id + "\">" +
-                        "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
+                        "<td>" + id + "</td><td>" + company + "</td></tr>";
                     $("#externalTableBody").append(tr);
-                    console.log(tr);
+
                 } else {
                     var tr = "<tr id=\"" + id + "\"><td><input type =\"button\" value=\"X\" onclick=\"deleteByButton('"
                         + id + "')\"/></td>" +
-                        "<td>" + id + "</td><td>" + flight.companyName + "</td></tr>";
+                        "<td>" + id + "</td><td>" + company + "</td></tr>";
                     $("#flightsTableBody").append(tr);
                 }
                 
@@ -49,8 +50,8 @@ function GetFlightPlans() {
         });
         flightsArr.forEach(function (item) {
             if (!item[1]) {
-                $("#" + item[0]).remove();
                 DeleteAirplane(item[0], false);
+                $("#" + item[0]).remove();
             } else {
                 dummyArr.push([item[0], false]);
             }
@@ -72,8 +73,4 @@ function MakeDateAndTime() {
     var dateAndTime = new Date(date.getTime()).toISOString();
     dateAndTime = dateAndTime.substr(0, (dateAndTime.length - 5)) + "Z";
     return dateAndTime;
-}
-
-function Sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

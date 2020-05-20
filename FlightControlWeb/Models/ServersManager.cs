@@ -14,10 +14,14 @@ namespace FlightControlWeb.Models
     public class ServersManager
     {
         private IMemoryCache myCache;
+        private Object arrayMutex;
+        private Object dictMutex; 
 
         public ServersManager(IMemoryCache cache)
         {
             myCache = cache;
+            arrayMutex = new Object();
+            dictMutex = new Object();
         }
 
         public FlightPlan GetExternalPlan(string id)
@@ -34,25 +38,38 @@ namespace FlightControlWeb.Models
 
         private string GetSerialzedObject(string url)
         {
-            WebRequest requestObject = WebRequest.Create(url);
-            requestObject.Method = "GET";
-            HttpWebResponse responseObject = null;
-            responseObject = (HttpWebResponse)requestObject.GetResponse();
-            string result = null;
-            using (Stream stream = responseObject.GetResponseStream())
+            try
             {
-                StreamReader sr = new StreamReader(stream);
-                result = sr.ReadToEnd();
-                sr.Close();
+                WebRequest requestObject = WebRequest.Create(url);
+                requestObject.Method = "GET";
+                HttpWebResponse responseObject = null;
+                responseObject = (HttpWebResponse)requestObject.GetResponse();
+                string result = null;
+                using (Stream stream = responseObject.GetResponseStream())
+                {
+                    StreamReader sr = new StreamReader(stream);
+                    result = sr.ReadToEnd();
+                    sr.Close();
+                }
+                return result;
             }
-            return result;
+            catch
+            {
+                return "";
+            }
+            
         }
         
         private FlightPlan GetPlanFromServer(Server s, string id)
         {
             string url = s.ServerURL + "/api/FlightPlan/" + id;
             string result = GetSerialzedObject(url);
-            return JsonConvert.DeserializeObject<FlightPlan>(result); 
+            if(result == "")
+            {
+                return null;
+            }
+            FlightPlan fp = JsonConvert.DeserializeObject<FlightPlan>(result);
+            return fp;
         }
 
         private ArrayList GetFlightsFromServer(DateTime dt, Server s)
@@ -60,6 +77,10 @@ namespace FlightControlWeb.Models
             string dtString = dt.ToString("s", DateTimeFormatInfo.InvariantInfo) + "Z";
             string url = s.ServerURL + "/api/Flights?relative_to=" + dtString;
             string result = GetSerialzedObject(url);
+            if (result == "")
+            {
+                return new ArrayList();
+            }
             List<Flight> list = JsonConvert.DeserializeObject<List<Flight>>(result);
             return new ArrayList(list);
         }
@@ -68,20 +89,47 @@ namespace FlightControlWeb.Models
         {
             ArrayList myExternalFlights = new ArrayList();
             List<Server> serversList = GetServersList();
-            Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
+            int size = serversList.Count;
+            Task[] tasks = new Task[size];
+            int i = 0;
+
             foreach (Server server in serversList)
             {
-                ArrayList serverFlights = GetFlightsFromServer(dt, server);
-                foreach (Flight f in serverFlights)
-                {
-                    f.IsExternal = true;
-                    myExternalFlights.Add(f);
+                tasks[i] = Task.Factory.StartNew(() => getFlightsFromSingle(server, dt, myExternalFlights));
+                i++;
+            }
 
-                    externalFlightIds[f.FlightId] = server;
+            //Block until all tasks complete.
+            Task.WaitAll(tasks);
+
+            return myExternalFlights;
+        }
+
+        private void getFlightsFromSingle(Server server, DateTime dt, ArrayList myExternalFlights)
+        {
+            ArrayList flights = new ArrayList();
+            
+            ArrayList serverFlights = GetFlightsFromServer(dt, server);
+            foreach (Flight f in serverFlights)
+            {
+                f.IsExternal = true;
+                flights.Add(f);
+
+                lock (dictMutex)
+                {
+                    Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
+                    string id = f.FlightId;
+                    if (!externalFlightIds.ContainsKey(id))
+                    {
+                        externalFlightIds[id] = server;
+                        SaveExternalIds(externalFlightIds);
+                    }
                 }
             }
-            SaveExternalIds(externalFlightIds);
-            return myExternalFlights;
+            lock (arrayMutex)
+            {
+                myExternalFlights.AddRange(serverFlights);
+            }
         }
 
         public List<Server> GetServersList()
@@ -128,7 +176,8 @@ namespace FlightControlWeb.Models
             myCache.Set("externalFlightIds", externalFlightIds);
         }
 
-        public void DeleteServer(string id) {
+        public bool DeleteServer(string id) {
+            bool status = false;
             List<Server> serversList = GetServersList();
             Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
             Dictionary<Server, string> dictInverse = externalFlightIds.ToDictionary((i) => i.Value, (i) => i.Key);
@@ -152,7 +201,9 @@ namespace FlightControlWeb.Models
                 }
                 serversList.Remove(serverToDelete);
                 SaveServersList(serversList);
+                status = true;
             }
+            return status;
         }
     }
 }
