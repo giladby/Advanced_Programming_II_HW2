@@ -29,7 +29,6 @@ namespace FlightControlWeb.Controllers
         public async Task<ActionResult> GetFlights([FromQuery] string relative_to,
             [FromQuery] string sync_all)
         {
-            
             try
             {
                 string request = Request.QueryString.Value;

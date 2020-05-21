@@ -1,18 +1,31 @@
-﻿async function printError(error) {
+﻿var id = 0
+async function printError(error) {
+    id += 1;
+    idString = id.toString() + "error";
+    let objString = "<div class=\"h4 errorMessage\" id=\"" + idString + "\">" + error + "</div>";
 
-    var msg = document.getElementById("myErrorMsg");
-    msg.innerHTML = error;
+    if (id > 1) {
+        let prv = id - 1;
+        let prvId = prv.toString() + "error";
+        let previous = document.getElementById(prvId);
+        previous.remove();
+    }
 
-    $("#myErrorMsg").fadeIn(0);
-    let width = msg.offsetWidth;
+    $("#errBox").append(objString);
+
+    let obj = $("#" + idString);
+    let objElem = document.getElementById(idString);
+
+    obj.fadeIn(0);
+    let width = objElem.offsetWidth;
     let offset = -0.5 * width;
     let offsetString = offset.toString() + "px";
-    msg.style.marginLeft = offsetString;
-    $("#myErrorMsg").fadeOut(0);
+    objElem.style.marginLeft = offsetString;
+    obj.fadeOut(0);
     
-    $("#myErrorMsg").fadeIn();
+    obj.fadeIn();
     await Sleep(3000);
-    $("#myErrorMsg").fadeOut();
+    obj.fadeOut();
 }
 
 function Sleep(ms) {

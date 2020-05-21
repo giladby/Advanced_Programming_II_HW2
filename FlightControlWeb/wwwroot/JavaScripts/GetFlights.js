@@ -1,9 +1,19 @@
-﻿async function FlightsLoop() {
+﻿
+async function FlightsLoop() {
+    var functionLock = false;
     while (true) {
+        //if (!functionLock) {
+        //    functionLock = true;
+        //    GetFlightsFunc();
+        //    functionLock = false;
+        //}
+
         GetFlightsFunc();
-        await Sleep(500);
+        await Sleep(1000);
     }
 }
+
+
 
 var flightsArr = [];
 function GetFlightsFunc() {
@@ -22,7 +32,7 @@ function GetFlightsFunc() {
                 if (item[0] == id) {
                     item[1] = true;
                     exist = true;
-                    ChangeAirplaneLocation(id, flight.latitude, flight.longitude);
+                    ChangeAirplaneLocation(id, latitude, longitude);
                     return;
                 }
             });
@@ -57,6 +67,8 @@ function GetFlightsFunc() {
             }
         });
         flightsArr = dummyArr.slice();
+    }).fail(function () {
+        printError("Failed trying to get flights");
     });
 }
 

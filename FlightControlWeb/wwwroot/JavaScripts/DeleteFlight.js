@@ -4,6 +4,9 @@
         type: 'delete',
         url: flightUrl,
         contentType: "application/json; charset=utf-8",
-        traditional: true
+        traditional: true,
+        error: function () {
+            printError("Failed deleting flight from server");
+        }
     });
 }

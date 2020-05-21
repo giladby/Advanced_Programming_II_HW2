@@ -75,6 +75,8 @@ function AddAirplane(flightId, source, isExternal, image, scale) {
     return airplane;
 }
 
+
+
 function ChangeAirplaneLocation(flightId, latitude, longitude) {
     map.getLayers().forEach(function (layer) {
         if (layer.get('name') == flightId) {
@@ -218,5 +220,7 @@ function getFlightPlanAndMark(flightId, source, external) {
             return;
         }
         MarkAirplane(data, flightId, source, external);
+    }).fail(function () {
+        printError("Failed trying to get flight plan");
     });
 }
