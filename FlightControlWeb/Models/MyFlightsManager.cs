@@ -10,7 +10,6 @@ namespace FlightControlWeb.Models
 {
     public class MyFlightsManager
     {
-        
         private IMemoryCache myCache;
 
         public MyFlightsManager(IMemoryCache cache)
@@ -18,15 +17,25 @@ namespace FlightControlWeb.Models
             myCache = cache;
         }
 
-        private void setCache(Dictionary<string, FlightPlan> flightIds, List<FlightPlan> flightPlans)
+        private void SaveFlightPlansAndIds(List<FlightPlan> flightPlans, Dictionary<string, FlightPlan> flightIds)
+        {
+            SaveFlightPlans(flightPlans);
+            SaveFlightIds(flightIds);
+        }
+
+        private void SaveFlightPlans(List<FlightPlan> flightPlans)
         {
             myCache.Set("flightPlans", flightPlans);
+        }
+
+        private void SaveFlightIds(Dictionary<string, FlightPlan> flightIds)
+        {
             myCache.Set("flightIds", flightIds);
         }
 
-        private Dictionary<string, FlightPlan> getFlightIds()
+        private Dictionary<string, FlightPlan> GetFlightIds()
         {
-            Dictionary<string, FlightPlan> flightIds = new Dictionary<string, FlightPlan>();
+            Dictionary<string, FlightPlan> flightIds;
             if (!myCache.TryGetValue("flightIds", out flightIds))
             {
                 if (flightIds == null)
@@ -34,13 +43,13 @@ namespace FlightControlWeb.Models
                     flightIds = new Dictionary<string, FlightPlan>();
                 }
             }
-            myCache.Set("flightIds", flightIds);
+            SaveFlightIds(flightIds);
             return flightIds;
         }
 
-        private List<FlightPlan> getFlightPlans()
+        private List<FlightPlan> GetFlightPlans()
         {
-            List<FlightPlan> flightPlans = new List<FlightPlan>();
+            List<FlightPlan> flightPlans;
             if (!myCache.TryGetValue("flightPlans", out flightPlans))
             {
                 if (flightPlans == null)
@@ -48,44 +57,39 @@ namespace FlightControlWeb.Models
                     flightPlans = new List<FlightPlan>();
                 }
             }
-            myCache.Set("flightPlans", flightPlans);
+            SaveFlightPlans(flightPlans);
             return flightPlans;
         }
 
-        private void addFlightPlanToCache(FlightPlan fp, string id)
+        private void AddFlightPlanToCache(FlightPlan fp, string id)
         {
-            List<FlightPlan> flightPlans = getFlightPlans();
-            Dictionary<string, FlightPlan> flightIds = getFlightIds();
-            
+            List<FlightPlan> flightPlans = GetFlightPlans();
+            Dictionary<string, FlightPlan> flightIds = GetFlightIds();
             flightIds.Add(id, fp);
             flightPlans.Add(fp);
-
-            setCache(flightIds, flightPlans);
+            SaveFlightPlansAndIds(flightPlans, flightIds);
         }
 
         private string GenerateFlightId()
         {
             string id = "";
-            Random rnd = new Random();
-            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            
+            Random random = new Random();
+            string allChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             for (int i = 0; i < 2; i++)
             {
-                id += chars[rnd.Next(chars.Length)];
+                id += allChars[random.Next(allChars.Length)];
             }
-
             for (int i = 0; i < 4; i++)
             {
-                id += rnd.Next(0, 10).ToString();
+                id += random.Next(0, 10).ToString();
             }
-
             return id;
         }
-        
-        public void AddFlightPlan(FlightPlan fp)
+
+        public void AddFlightPlan(FlightPlan flightPlan)
         {
             string id;
-            Dictionary<string, FlightPlan> flightIds = getFlightIds();
+            Dictionary<string, FlightPlan> flightIds = GetFlightIds();
             while (true)
             {
                 id = GenerateFlightId();
@@ -94,52 +98,50 @@ namespace FlightControlWeb.Models
                     break;
                 }
             }
-            
-            addFlightPlanToCache(fp, id);
+            AddFlightPlanToCache(flightPlan, id);
         }
 
         public bool DeleteFlightPlan(string id)
         {
-            bool status = false;
-            List<FlightPlan> flightPlans = getFlightPlans();
-            Dictionary<string, FlightPlan> flightIds = getFlightIds();
-
+            bool deleted = false;
+            var flightPlans = GetFlightPlans();
+            var flightIds = GetFlightIds();
             if (flightIds.ContainsKey(id))
             {
-                FlightPlan myFlightPlan = flightIds[id];
+                var myFlightPlan = flightIds[id];
                 flightPlans.Remove(myFlightPlan);
                 flightIds.Remove(id);
-                setCache(flightIds, flightPlans);
-                status = true;
+                SaveFlightPlansAndIds(flightPlans, flightIds);
+                deleted = true;
             }
-            return status;
+            return deleted;
         }
-       
+
         public FlightPlan GetFlightPlan(string id)
         {
-            Dictionary<string, FlightPlan> flightIds = getFlightIds();
+            var flightIds = GetFlightIds();
             if (flightIds.ContainsKey(id))
             {
-                return flightIds[id]; 
+                return flightIds[id];
             }
             return null;
         }
 
-        private Tuple<double, double> GetLocation(FlightPlan fp, DateTime dt)
+        private Tuple<double, double> GetLocation(FlightPlan flightPlan, DateTime dateTime)
         {
-            double longitude = fp.InitialLocation.Longitude;
-            double latitude = fp.InitialLocation.Latitude;
-            DateTime start = fp.InitialLocation.MyDateTime;
-            double timeGap = (dt - start).TotalSeconds;
+            double longitude = flightPlan.InitialLocation.Longitude;
+            double latitude = flightPlan.InitialLocation.Latitude;
+            var startTime = flightPlan.InitialLocation.MyDateTime;
+            double timeGap = (dateTime - startTime).TotalSeconds;
             double distance;
             double ratio;
             if (timeGap == 0)
             {
                 return new Tuple<double, double>(longitude, latitude);
             }
-            foreach (FlightSegment currentSegment in fp.Segments)
+            foreach (FlightSegment currentSegment in flightPlan.Segments)
             {
-                if(timeGap <= currentSegment.TimespanSeconds)
+                if (timeGap <= currentSegment.TimespanSeconds)
                 {
                     ratio = timeGap / currentSegment.TimespanSeconds;
                     distance = currentSegment.Longitude - longitude;
@@ -155,28 +157,28 @@ namespace FlightControlWeb.Models
             return new Tuple<double, double>(longitude, latitude);
         }
 
-        public Flight GetFlight(FlightPlan fp, DateTime dt)
+        public Flight GetFlight(FlightPlan flightPlan, DateTime dateTime)
         {
-            Tuple<double, double> location = GetLocation(fp, dt);
-            double lon = location.Item1;
-            double lat = location.Item2;
-            Dictionary<string, FlightPlan> flightIds = getFlightIds();
-            string id = flightIds.FirstOrDefault(x => x.Value == fp).Key;
-            if(id == null)
+            var location = GetLocation(flightPlan, dateTime);
+            double longitude = location.Item1;
+            double latitude = location.Item2;
+            var flightIds = GetFlightIds();
+            string id = flightIds.FirstOrDefault(x => x.Value == flightPlan).Key;
+            if (id == null)
             {
                 return null;
             }
-            return new Flight(id, lon, lat, fp.Passengers, fp.CompanyName, dt, false);
+            return new Flight(id, longitude, latitude, flightPlan.Passengers, flightPlan.CompanyName, dateTime, false);
         }
 
-        private DateTime GetEndTime(FlightPlan fp)
+        private DateTime GetEndTime(FlightPlan flightPlan)
         {
-            DateTime time = fp.InitialLocation.MyDateTime;
-            foreach (FlightSegment fs in fp.Segments)
+            var time = flightPlan.InitialLocation.MyDateTime;
+            foreach (FlightSegment segment in flightPlan.Segments)
             {
                 try
                 {
-                    time = time.AddSeconds(fs.TimespanSeconds);
+                    time = time.AddSeconds(segment.TimespanSeconds);
                 }
                 catch
                 {
@@ -186,20 +188,20 @@ namespace FlightControlWeb.Models
             return time;
         }
 
-        public ArrayList GetFlightsByTime(DateTime dt)
+        public ArrayList GetFlightsByTime(DateTime dateTime)
         {
-            ArrayList flights = new ArrayList();
-            List<FlightPlan> flightPlans = getFlightPlans();
-            foreach (FlightPlan fp in flightPlans)
+            var flights = new ArrayList();
+            var flightPlans = GetFlightPlans();
+            foreach (FlightPlan flightPlan in flightPlans)
             {
-                DateTime end = GetEndTime(fp);
-                if ((DateTime.Compare(dt, fp.InitialLocation.MyDateTime) >= 0) && (DateTime.Compare(dt, end) <= 0))
+                var endTime = GetEndTime(flightPlan);
+                if ((DateTime.Compare(dateTime, flightPlan.InitialLocation.MyDateTime) >= 0)
+                    && (DateTime.Compare(dateTime, endTime) <= 0))
                 {
-                   flights.Add(GetFlight(fp, dt));
+                    flights.Add(GetFlight(flightPlan, dateTime));
                 }
             }
             return flights;
-
         }
     }
 }

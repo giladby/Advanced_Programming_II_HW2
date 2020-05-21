@@ -13,33 +13,31 @@ namespace FlightControlWeb.Models
 
     public class FlightPlan
     {
-        public FlightPlan(int pass, string cm,
-            FlightLocation il, List<FlightSegment> segments)
-        {
-            Passengers = pass;
-            CompanyName = cm;
-            InitialLocation = il;
-            Segments = segments;
-        }
-        public FlightPlan()
-        {
-
-        }
-
         [JsonPropertyName("passengers")]
         [JsonProperty("passengers")]
         public int Passengers { get; set; }
-     
+
         [JsonPropertyName("company_name")]
         [JsonProperty("company_name")]
         public string CompanyName { get; set; }
 
         [JsonPropertyName("initial_location")]
         [JsonProperty("initial_location")]
-        public FlightLocation InitialLocation { get; set;}
+        public FlightLocation InitialLocation { get; set; }
 
         [JsonPropertyName("segments")]
         [JsonProperty("segments")]
         public List<FlightSegment> Segments { get; set; }
+
+        public FlightPlan() { }
+
+        public FlightPlan(int passengersInput, string companyNameInput,
+            FlightLocation initialLocationInput, List<FlightSegment> segmentsInput)
+        {
+            Passengers = passengersInput;
+            CompanyName = companyNameInput;
+            InitialLocation = initialLocationInput;
+            Segments = segmentsInput;
+        }
     }
 }

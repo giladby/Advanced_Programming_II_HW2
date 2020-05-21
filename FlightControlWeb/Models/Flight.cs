@@ -10,17 +10,6 @@ namespace FlightControlWeb.Models
 {
     public class Flight
     {
-        public Flight(string id, double lon, double lat, int pass, string comp, DateTime dt, bool ex)
-        {
-            FlightId = id;
-            Longitude = lon;
-            Latitude = lat;
-            Passangers = pass;
-            CompanyName = comp;
-            MyDateTime = dt;
-            IsExternal = ex;
-        }
-
         [JsonPropertyName("flight_id")]
         [JsonProperty("flight_id")]
         public string FlightId { get; set; }
@@ -33,9 +22,9 @@ namespace FlightControlWeb.Models
         [JsonProperty("latitude")]
         public double Latitude { get; set; }
 
-        [JsonPropertyName("passangers")]
-        [JsonProperty("passangers")]
-        public int Passangers { get; set; }
+        [JsonPropertyName("passengers")]
+        [JsonProperty("passengers")]
+        public int Passengers { get; set; }
 
         [JsonPropertyName("company_name")]
         [JsonProperty("company_name")]
@@ -48,5 +37,17 @@ namespace FlightControlWeb.Models
         [JsonPropertyName("is_external")]
         [JsonProperty("is_external")]
         public bool IsExternal { get; set; }
+
+        public Flight(string flightIdInput, double longitudeInput, double latitudeInput, int passengersInput,
+            string companyNameInput, DateTime myDateTimeInput, bool isExternalInput)
+        {
+            FlightId = flightIdInput;
+            Longitude = longitudeInput;
+            Latitude = latitudeInput;
+            Passengers = passengersInput;
+            CompanyName = companyNameInput;
+            MyDateTime = myDateTimeInput;
+            IsExternal = isExternalInput;
+        }
     }
 }

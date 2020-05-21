@@ -14,42 +14,42 @@ namespace FlightControlWeb.Models
     public class ServersManager
     {
         private IMemoryCache myCache;
-        private Object arrayMutex;
-        private Object dictMutex; 
+        private object listLock;
+        private object dictLock;
 
         public ServersManager(IMemoryCache cache)
         {
             myCache = cache;
-            arrayMutex = new Object();
-            dictMutex = new Object();
+            listLock = new object();
+            dictLock = new object();
         }
 
         public FlightPlan GetExternalPlan(string id)
         {
-            Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
-            if(externalFlightIds.ContainsKey(id))
+            var externalFlightIds = GetExternalFlightIds();
+            if (externalFlightIds.ContainsKey(id))
             {
                 Server server = externalFlightIds[id];
-                FlightPlan fp = GetPlanFromServer(server, id);
-                return fp;
+                FlightPlan flightPlan = GetFlightPlanFromServer(server, id);
+                return flightPlan;
             }
             return null;
         }
 
-        private string GetSerialzedObject(string url)
+        private string GetSerializedObject(string url)
         {
             try
             {
-                WebRequest requestObject = WebRequest.Create(url);
+                var requestObject = WebRequest.Create(url);
                 requestObject.Method = "GET";
                 HttpWebResponse responseObject = null;
                 responseObject = (HttpWebResponse)requestObject.GetResponse();
                 string result = null;
                 using (Stream stream = responseObject.GetResponseStream())
                 {
-                    StreamReader sr = new StreamReader(stream);
-                    result = sr.ReadToEnd();
-                    sr.Close();
+                    var streamReader = new StreamReader(stream);
+                    result = streamReader.ReadToEnd();
+                    streamReader.Close();
                 }
                 return result;
             }
@@ -57,76 +57,68 @@ namespace FlightControlWeb.Models
             {
                 return "";
             }
-            
         }
-        
-        private FlightPlan GetPlanFromServer(Server s, string id)
+
+        private FlightPlan GetFlightPlanFromServer(Server server, string id)
         {
-            string url = s.ServerURL + "/api/FlightPlan/" + id;
-            string result = GetSerialzedObject(url);
-            if(result == "")
+            string url = server.ServerURL + "/api/FlightPlan/" + id;
+            string flightPlan = GetSerializedObject(url);
+            if (flightPlan == "")
             {
                 return null;
             }
-            FlightPlan fp = JsonConvert.DeserializeObject<FlightPlan>(result);
-            return fp;
+            return JsonConvert.DeserializeObject<FlightPlan>(flightPlan); ;
         }
 
-        private ArrayList GetFlightsFromServer(DateTime dt, Server s)
+        private ArrayList GetFlightsFromServer(Server server, DateTime dateTime)
         {
-            string dtString = dt.ToString("s", DateTimeFormatInfo.InvariantInfo) + "Z";
-            string url = s.ServerURL + "/api/Flights?relative_to=" + dtString;
-            string result = GetSerialzedObject(url);
-            if (result == "")
+            string dateTimeString = dateTime.ToString("s", DateTimeFormatInfo.InvariantInfo) + "Z";
+            string url = server.ServerURL + "/api/Flights?relative_to=" + dateTimeString;
+            string flights = GetSerializedObject(url);
+            if (flights == "")
             {
                 return new ArrayList();
             }
-            List<Flight> list = JsonConvert.DeserializeObject<List<Flight>>(result);
-            return new ArrayList(list);
+            var flightsList = JsonConvert.DeserializeObject<List<Flight>>(flights);
+            return new ArrayList(flightsList);
         }
 
-        public ArrayList GetExternalFlights(DateTime dt)
+        public ArrayList GetExternalFlights(DateTime dateTime)
         {
-            ArrayList myExternalFlights = new ArrayList();
-            List<Server> serversList = GetServersList();
-            int size = serversList.Count;
-            Task[] tasks = new Task[size];
+            var myExternalFlights = new ArrayList();
+            var serversList = GetServersList();
+            int listSize = serversList.Count;
+            var tasks = new Task[listSize];
             int i = 0;
-
             foreach (Server server in serversList)
             {
-                tasks[i] = Task.Factory.StartNew(() => getFlightsFromSingle(server, dt, myExternalFlights));
+                tasks[i] = Task.Factory.StartNew(() => AddFlightsFromServer(server, dateTime, myExternalFlights));
                 i++;
             }
-
-            //Block until all tasks complete.
             Task.WaitAll(tasks);
-
             return myExternalFlights;
         }
 
-        private void getFlightsFromSingle(Server server, DateTime dt, ArrayList myExternalFlights)
+        private void AddFlightsFromServer(Server server, DateTime dateTime, ArrayList myExternalFlights)
         {
-            ArrayList flights = new ArrayList();
-            
-            ArrayList serverFlights = GetFlightsFromServer(dt, server);
-            foreach (Flight f in serverFlights)
+            var flights = new ArrayList();
+            var serverFlights = GetFlightsFromServer(server, dateTime);
+            foreach (Flight flight in serverFlights)
             {
-                f.IsExternal = true;
-                flights.Add(f);
-
-                lock (dictMutex)
+                flight.IsExternal = true;
+                flights.Add(flight);
+                lock (dictLock)
                 {
-                    Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
-                    string id = f.FlightId;
+                    var externalFlightIds = GetExternalFlightIds();
+                    string id = flight.FlightId;
                     if (!externalFlightIds.ContainsKey(id))
                     {
                         externalFlightIds[id] = server;
-                        SaveExternalIds(externalFlightIds);
+                        SaveExternalFlightIds(externalFlightIds);
                     }
                 }
             }
-            lock (arrayMutex)
+            lock (listLock)
             {
                 myExternalFlights.AddRange(serverFlights);
             }
@@ -134,7 +126,7 @@ namespace FlightControlWeb.Models
 
         public List<Server> GetServersList()
         {
-            List<Server> serversList = new List<Server>();
+            List<Server> serversList;
             if (!myCache.TryGetValue("serversList", out serversList))
             {
                 if (serversList == null)
@@ -148,7 +140,7 @@ namespace FlightControlWeb.Models
 
         public Dictionary<string, Server> GetExternalFlightIds()
         {
-            Dictionary<string, Server> externalFlightIds = new Dictionary<string, Server>();
+            Dictionary<string, Server> externalFlightIds;
             if (!myCache.TryGetValue("externalFlightIds", out externalFlightIds))
             {
                 if (externalFlightIds == null)
@@ -156,12 +148,13 @@ namespace FlightControlWeb.Models
                     externalFlightIds = new Dictionary<string, Server>();
                 }
             }
-            SaveExternalIds(externalFlightIds);
+            SaveExternalFlightIds(externalFlightIds);
             return externalFlightIds;
         }
 
-        public void AddServer(Server server) {
-            List<Server> serversList = GetServersList();
+        public void AddServer(Server server)
+        {
+            var serversList = GetServersList();
             serversList.Add(server);
             SaveServersList(serversList);
         }
@@ -171,39 +164,39 @@ namespace FlightControlWeb.Models
             myCache.Set("serversList", serversList);
         }
 
-        private void SaveExternalIds(Dictionary<string, Server> externalFlightIds)
+        private void SaveExternalFlightIds(Dictionary<string, Server> externalFlightIds)
         {
             myCache.Set("externalFlightIds", externalFlightIds);
         }
 
-        public bool DeleteServer(string id) {
-            bool status = false;
-            List<Server> serversList = GetServersList();
-            Dictionary<string, Server> externalFlightIds = GetExternalFlightIds();
-            Dictionary<Server, string> dictInverse = externalFlightIds.ToDictionary((i) => i.Value, (i) => i.Key);
-
+        public bool DeleteServer(string id)
+        {
+            bool deleted = false;
+            var serversList = GetServersList();
+            var externalFlightIds = GetExternalFlightIds();
+            var dictInverse = externalFlightIds.ToDictionary((i) => i.Value, (i) => i.Key);
             Server serverToDelete = null;
-            foreach (Server s in serversList)
+            foreach (Server server in serversList)
             {
-                if (s.ServerId == id)
+                if (server.ServerId == id)
                 {
-                    serverToDelete = s;
+                    serverToDelete = server;
                     break;
                 }
             }
             if (serverToDelete != null)
             {
-                if(dictInverse.ContainsKey(serverToDelete))
+                if (dictInverse.ContainsKey(serverToDelete))
                 {
                     string flightId = dictInverse[serverToDelete];
                     externalFlightIds.Remove(flightId);
-                    SaveExternalIds(externalFlightIds);
+                    SaveExternalFlightIds(externalFlightIds);
                 }
                 serversList.Remove(serverToDelete);
                 SaveServersList(serversList);
-                status = true;
+                deleted = true;
             }
-            return status;
+            return deleted;
         }
     }
 }

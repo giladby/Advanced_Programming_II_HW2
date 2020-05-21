@@ -20,7 +20,7 @@ function DisplayMap() {
         target: 'map',
         view: new ol.View({
             center: ol.proj.transform([32.003657, 34.872770], 'EPSG:4326', 'EPSG:3857'),
-            zoom: 2
+            zoom: 0
         })
     });
 
