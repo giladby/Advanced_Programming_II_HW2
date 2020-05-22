@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29911.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightControlWeb", "FlightControlWeb\FlightControlWeb.csproj", "{01AC9515-336C-4D89-BAED-6A57902D094D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitFlightController", "XUnitFlightController\XUnitFlightController.csproj", "{1CBFF3AE-29AC-473E-BF52-1DA437D65DA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitFlightsController", "XUnitFlightController\XUnitFlightsController.csproj", "{1CBFF3AE-29AC-473E-BF52-1DA437D65DA5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

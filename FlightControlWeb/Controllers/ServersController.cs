@@ -12,9 +12,9 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class ServersController : ControllerBase
     {
-        private IServerManager manager;
+        private IServersManager manager;
 
-        public ServersController(IServerManager managerInput)
+        public ServersController(IServersManager managerInput)
         {
             manager = managerInput;
         }

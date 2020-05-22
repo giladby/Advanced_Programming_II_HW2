@@ -14,9 +14,9 @@ namespace FlightControlWeb.Controllers
     public class FlightPlanController : ControllerBase
     {
         private IFlightsManager myFlightsManager;
-        private IServerManager serversManager;
+        private IServersManager serversManager;
 
-        public FlightPlanController(IFlightsManager myFlightsManagerInput, IServerManager serversManagerInput)
+        public FlightPlanController(IFlightsManager myFlightsManagerInput, IServersManager serversManagerInput)
         {
             myFlightsManager = myFlightsManagerInput;
             serversManager = serversManagerInput;

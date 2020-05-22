@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlightControlWeb.Models
 {
-    public interface IServerManager
+    public interface IServersManager
     {
         public FlightPlan GetExternalPlan(string id);
 

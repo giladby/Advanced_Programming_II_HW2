@@ -11,7 +11,7 @@ using System.Globalization;
 
 namespace FlightControlWeb.Models
 {
-    public class ServersManager : IServerManager
+    public class ServersManager : IServersManager
     {
         private IMemoryCache myCache;
         private object listLock;
@@ -67,7 +67,7 @@ namespace FlightControlWeb.Models
             {
                 return null;
             }
-            return JsonConvert.DeserializeObject<FlightPlan>(flightPlan); ;
+            return JsonConvert.DeserializeObject<FlightPlan>(flightPlan);
         }
 
         private ArrayList GetFlightsFromServer(Server server, DateTime dateTime)
@@ -102,6 +102,7 @@ namespace FlightControlWeb.Models
                     catch
                     {
                         failed = true;
+                        myExternalFlights = new ArrayList();
                         return;
                     }
                 });

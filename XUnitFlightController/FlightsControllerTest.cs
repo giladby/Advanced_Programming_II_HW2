@@ -16,85 +16,99 @@ namespace XUnitFlightController
 {
     public class FlightsControllerTest
     {
-        private FlightsController flightsController;
-        private Mock<IFlightsManager> flightsMock;
-        private Mock<IServerManager> serversMock;
-
-        public FlightsControllerTest()
+        [Fact]
+        public async Task GetFlightsAllTests()
         {
-            flightsMock = new Mock<IFlightsManager>();
-            serversMock = new Mock<IServerManager>();
-
+            await GetFlightsTestSuccess();
+            await GetFlightsTestMyFlightsFail();
+            await GetFlightsTestServersFail();
         }
 
-        private async Task GetFlightsTest(bool resultBool)
+        private async Task GetFlightsTestSuccess()
+        {
+            await GetFlightsTest(false, false);
+        }
+
+        private async Task GetFlightsTestMyFlightsFail()
+        {
+            await GetFlightsTest(true, false);
+        }
+
+        private async Task GetFlightsTestServersFail()
+        {
+            await GetFlightsTest(false, true);
+        }
+        
+        private async Task GetFlightsTest(bool myFlightsFailFlag, bool serversFailFlag)
         {
             //Arrange
-            string relativeTo = "2020-05-22T11:14:12Z";
-            DateTime time = DateTime.ParseExact(relativeTo, "yyyy-MM-ddTHH:mm:ssZ",
+            string relativeTo = "2020-10-10T10:10:10Z";
+            DateTime dateTime = DateTime.ParseExact(relativeTo, "yyyy-MM-ddTHH:mm:ssZ",
                 System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
-
-            Flight f1 = new Flight("AA1121", 50, 50, 100, "Arkia", time, false);
-            Flight f2 = new Flight("AA8121", 55, 12, 100, "El-Al", time, false);
-            Flight f3 = new Flight("AB0121", 55, 12, 120, "company", time, true);
-            ArrayList myFlights = new ArrayList { f1, f2 };
-            ArrayList externalFlights = new ArrayList { f3 };
-
+            Flight flight1 = new Flight("AA1111", 10, 10, 100, "El-Al", dateTime, false);
+            Flight flight2 = new Flight("BB2222", 20, 20, 200, "Arkia", dateTime, false);
+            Flight flight3 = new Flight("CC3333", 30, 30, 300, "SwissAir", dateTime, true);
+            Flight flight4 = new Flight("DD4444", 40, 40, 400, "Aeroflot", dateTime, true);
+            Flight flight5 = new Flight("EE5555", 50, 50, 500, "Lufthansa", dateTime, true);
+            Flight flight6 = new Flight("FF6666", 60, 60, 600, "QatarAirways", dateTime, true);
+            ArrayList myFlights = new ArrayList { flight1, flight2, flight3 };
+            ArrayList externalFlights = new ArrayList { flight4, flight5, flight6 };
+            var flightsMock = new Mock<IFlightsManager>();
+            var serversMock = new Mock<IServersManager>();
+            if (myFlightsFailFlag)
+            {
+                flightsMock.Setup(flightsMock => flightsMock.GetFlightsByTime(dateTime)).Throws(new Exception());
+            } else
+            {
+                flightsMock.Setup(flightsMock => flightsMock.GetFlightsByTime(dateTime)).Returns(myFlights);
+            }
+            serversMock.Setup(serversMock => serversMock.GetExternalFlights(dateTime))
+                .Returns(new Tuple<bool, ArrayList>(serversFailFlag, externalFlights));
             var context = new Mock<HttpContext>();
             context.SetupGet(x => x.Request.QueryString).Returns(new QueryString("?sync_all"));
-
             var controllerContext = new ControllerContext()
             {
                 HttpContext = context.Object,
             };
-
-            flightsMock.Setup(flightsMock => flightsMock.GetFlightsByTime(time)).Returns(myFlights);
-            serversMock.Setup(serversMock => serversMock.GetExternalFlights(time)).Returns(new Tuple<bool, ArrayList>(resultBool, externalFlights));
-
-            //assign context to controller
-            flightsController = new FlightsController(flightsMock.Object, serversMock.Object)
+            var flightsController = new FlightsController(flightsMock.Object, serversMock.Object)
             {
                 ControllerContext = controllerContext,
             };
-
             // Act
             var flights = await flightsController.GetFlights(relativeTo);
-
-
             // Assert
-            if (resultBool)
+            if (myFlightsFailFlag)
             {
                 Assert.IsType<BadRequestObjectResult>(flights);
+                var badRequestResult = flights as BadRequestObjectResult;
+                Assert.Equal("Failed receiving flights", badRequestResult.Value);
+            }
+            else if (serversFailFlag)
+            {
+                Assert.IsType<BadRequestObjectResult>(flights);
+                var badRequestResult = flights as BadRequestObjectResult;
+                Assert.Equal("Failed receiving flights from servers", badRequestResult.Value);
             }
             else
             {
                 Assert.IsType<OkObjectResult>(flights);
-
                 var okResult = flights as OkObjectResult;
-                Assert.IsAssignableFrom<ArrayList>(okResult.Value);
-
+                Assert.IsType<ArrayList>(okResult.Value);
                 var list = okResult.Value as ArrayList;
-                Assert.Equal(3, list.Count);
+                Assert.Equal(6, list.Count);
                 foreach (object obj in list)
                 {
                     Assert.IsType<Flight>(obj);
+                    var flight = obj as Flight;
+                    Assert.IsType<string>(flight.FlightId);
+                    Assert.IsType<double>(flight.Longitude);
+                    Assert.IsType<double>(flight.Latitude);
+                    Assert.IsType<int>(flight.Passengers);
+                    Assert.IsType<string>(flight.CompanyName);
+                    Assert.IsType<DateTime>(flight.MyDateTime);
+                    Assert.IsType<bool>(flight.IsExternal);
                 }
             }
-
-        }
-
-
-        [Fact]
-        public async Task GetFlightsTestSuccess()
-        {
-            await GetFlightsTest(false);
-        }
-
-        [Fact]
-        public async Task GetFlightsTestFailed()
-        {
-            await GetFlightsTest(true);
         }
     }
-
 }

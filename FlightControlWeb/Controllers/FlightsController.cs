@@ -16,9 +16,9 @@ namespace FlightControlWeb.Controllers
     public class FlightsController : ControllerBase
     {
         private IFlightsManager myFlightsManager;
-        private IServerManager serversManager;
+        private IServersManager serversManager;
 
-        public FlightsController(IFlightsManager myFlightsManagerInput, IServerManager serversManagerInput)
+        public FlightsController(IFlightsManager myFlightsManagerInput, IServersManager serversManagerInput)
         {
             myFlightsManager = myFlightsManagerInput;
             serversManager = serversManagerInput;
@@ -38,17 +38,19 @@ namespace FlightControlWeb.Controllers
                 if (request.Contains("sync_all"))
                 {
                     Tuple<bool, ArrayList> result = await Task.Run(() => serversManager.GetExternalFlights(time));
-                    if(result.Item1)
+                    bool failed = result.Item1;
+                    ArrayList externalFlights = result.Item2;
+                    if (failed)
                     {
-                        return BadRequest("Failed connecting with external server");
+                        return BadRequest("Failed receiving flights from servers");
                     }
-                    flights.AddRange(result.Item2);
+                    flights.AddRange(externalFlights);
                 }
                 return Ok(flights);
             }
             catch
             {
-                return BadRequest("Failed trying to get flights");
+                return BadRequest("Failed receiving flights");
             }
         }
 
