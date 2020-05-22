@@ -1,4 +1,4 @@
-﻿var flightPlanUrl = "../api/FlightPlan";
+﻿let flightPlanUrl = "../api/FlightPlan";
 function AddFlightPlanFunc(flightPlan) {
     $.ajax({
         type: 'post',

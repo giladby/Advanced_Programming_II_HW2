@@ -18,16 +18,15 @@ namespace FlightControlWeb.Controllers
         private MyFlightsManager myFlightsManager;
         private ServersManager serversManager;
 
-        public FlightsController(MyFlightsManager fm, ServersManager sm)
+        public FlightsController(MyFlightsManager myFlightsManagerInput, ServersManager serversManagerInput)
         {
-            myFlightsManager = fm;
-            serversManager = sm;
+            myFlightsManager = myFlightsManagerInput;
+            serversManager = serversManagerInput;
         }
 
         // GET: api/Flights
         [HttpGet]
-        public async Task<ActionResult> GetFlights([FromQuery] string relative_to,
-            [FromQuery] string sync_all)
+        public async Task<ActionResult> GetFlights([FromQuery] string relative_to, [FromQuery] string sync_all)
         {
             try
             {

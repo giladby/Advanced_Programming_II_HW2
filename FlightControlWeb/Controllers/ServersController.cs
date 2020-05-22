@@ -14,11 +14,10 @@ namespace FlightControlWeb.Controllers
     {
         private ServersManager manager;
 
-        public ServersController(ServersManager m)
+        public ServersController(ServersManager managerInput)
         {
-            manager = m;
+            manager = managerInput;
         }
-
 
         // GET: api/Servers
         [HttpGet]
@@ -39,8 +38,7 @@ namespace FlightControlWeb.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(string id)
         {
-            
-            if(manager.DeleteServer(id))
+            if (manager.DeleteServer(id))
             {
                 return Ok();
             }

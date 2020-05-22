@@ -1,0 +1,64 @@
+﻿<div id="errBox"></div>
+<div class="row emptyRow"></div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-6">
+        <div class="row mapRow justify-content-center">
+            <h2>map</h2>
+            <div id="map" class="map"></div>
+        </div>
+        <div class="row detailsRow justify-content-center">
+            <h2>Flight Details</h2>
+            <div class="table myFlightDetailsTable">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Starting Location</th>
+                            <th>Ending Location</th>
+                            <th>Starting Time (UTC)</th>
+                            <th>Ending Time (UTC)</th>
+                            <th>Company</th>
+                            <th>Passangers</th>
+                        </tr>
+                    </thead>
+                    <tbody id="FlightDetailsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div id="dragAndDropImage">
+            <img src="Images/dragAndDrop.png" class="img-fluid img-thumbnail" alt="Chania">
+        </div>
+        <div id="flightsList" class="row flightsRow justify-content-center">
+            <h2>My Flights</h2>
+            <div id="flightsTable" class="table myFlightsTable">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Delete</th>
+                            <th>Flight ID</th>
+                            <th>Company</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flightsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row flightsRow justify-content-center">
+            <h2>External Flights</h2>
+            <div id="externalTable" class="table myExternalTable">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Flight ID</th>
+                            <th>Company</th>
+                        </tr>
+                    </thead>
+                    <tbody id="externalTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1"></div>
+</div>

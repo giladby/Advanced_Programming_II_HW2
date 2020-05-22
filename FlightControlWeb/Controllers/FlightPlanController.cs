@@ -16,10 +16,10 @@ namespace FlightControlWeb.Controllers
         private MyFlightsManager myFlightsManager;
         private ServersManager serversManager;
 
-        public FlightPlanController(MyFlightsManager fm, ServersManager sm)
+        public FlightPlanController(MyFlightsManager myFlightsManagerInput, ServersManager serversManagerInput)
         {
-            myFlightsManager = fm;
-            serversManager = sm;
+            myFlightsManager = myFlightsManagerInput;
+            serversManager = serversManagerInput;
         }
 
         // GET: api/FlightPlan/{id}
@@ -28,18 +28,16 @@ namespace FlightControlWeb.Controllers
         {
             try
             {
-                FlightPlan fp = myFlightsManager.GetFlightPlan(id);
-                if (fp == null)
+                FlightPlan flightPlan = myFlightsManager.GetFlightPlan(id);
+                if (flightPlan == null)
                 {
-                    fp = await Task.Run(() => serversManager.GetExternalPlan(id));
-                    if(fp == null)
+                    flightPlan = await Task.Run(() => serversManager.GetExternalPlan(id));
+                    if (flightPlan == null)
                     {
                         return NotFound();
                     }
-                    
                 }
-
-                return Ok(fp);
+                return Ok(flightPlan);
             }
             catch
             {
@@ -49,9 +47,9 @@ namespace FlightControlWeb.Controllers
 
         // POST: api/FlightPlan
         [HttpPost]
-        public ActionResult AddFlightPlan([FromBody] FlightPlan fp)
+        public ActionResult AddFlightPlan([FromBody] FlightPlan flightPlan)
         {
-            myFlightsManager.AddFlightPlan(fp);
+            myFlightsManager.AddFlightPlan(flightPlan);
             return Ok();
         }
     }

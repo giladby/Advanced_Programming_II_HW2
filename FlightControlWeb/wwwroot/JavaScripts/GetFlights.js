@@ -1,33 +1,25 @@
 ﻿
 async function FlightsLoop() {
-    var functionLock = false;
     while (true) {
-        //if (!functionLock) {
-        //    functionLock = true;
-        //    GetFlightsFunc();
-        //    functionLock = false;
-        //}
-
         GetFlightsFunc();
         await Sleep(1000);
     }
 }
 
 
-
 var flightsArr = [];
 function GetFlightsFunc() {
-    var dateAndTime = MakeDateAndTime();
-    var dummyArr = [];
-    var flightUrl = "../api/Flights?relative_to=" + dateAndTime + "&sync_all";
+    let dateAndTime = MakeDateAndTime();
+    let dummyArr = [];
+    let flightUrl = "../api/Flights?relative_to=" + dateAndTime + "&sync_all";
     $.get(flightUrl, function (data) {
         data.forEach(function (flight) {
-            var id = flight.flight_id;
+            let id = flight.flight_id;
             let latitude = flight.latitude;
             let longitude = flight.longitude;
             let external = flight.is_external;
             let company = flight.company_name;
-            var exist = false;
+            let exist = false;
             flightsArr.forEach(function (item) {
                 if (item[0] == id) {
                     item[1] = true;
@@ -38,12 +30,12 @@ function GetFlightsFunc() {
             });
             if (!exist) {
                 if (external) {
-                    var tr = "<tr id=\"" + id + "\">" +
+                    let tr = "<tr id=\"" + id + "\">" +
                         "<td>" + id + "</td><td>" + company + "</td></tr>";
                     $("#externalTableBody").append(tr);
 
                 } else {
-                    var tr = "<tr id=\"" + id + "\"><td><input type =\"button\" value=\"X\" onclick=\"deleteByButton('"
+                    let tr = "<tr id=\"" + id + "\"><td><input type =\"button\" value=\"X\" onclick=\"deleteByButton('"
                         + id + "')\"/></td>" +
                         "<td>" + id + "</td><td>" + company + "</td></tr>";
                     $("#flightsTableBody").append(tr);
@@ -81,8 +73,8 @@ function deleteByButton(id) {
 }
 
 function MakeDateAndTime() {
-    var date = new Date();
-    var dateAndTime = new Date(date.getTime()).toISOString();
+    let date = new Date();
+    let dateAndTime = new Date(date.getTime()).toISOString();
     dateAndTime = dateAndTime.substr(0, (dateAndTime.length - 5)) + "Z";
     return dateAndTime;
 }

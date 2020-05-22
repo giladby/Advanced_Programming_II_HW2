@@ -1,4 +1,4 @@
-﻿var id = 0
+﻿let id = 0
 async function printError(error) {
     id += 1;
     idString = id.toString() + "error";
@@ -13,19 +13,19 @@ async function printError(error) {
 
     $("#errBox").append(objString);
 
-    let obj = $("#" + idString);
+    let objTag = $("#" + idString);
     let objElem = document.getElementById(idString);
 
-    obj.fadeIn(0);
+    objTag.fadeIn(0);
     let width = objElem.offsetWidth;
     let offset = -0.5 * width;
     let offsetString = offset.toString() + "px";
     objElem.style.marginLeft = offsetString;
-    obj.fadeOut(0);
+    objTag.fadeOut(0);
     
-    obj.fadeIn();
+    objTag.fadeIn();
     await Sleep(3000);
-    obj.fadeOut();
+    objTag.fadeOut();
 }
 
 function Sleep(ms) {
