@@ -12,9 +12,9 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class ServersController : ControllerBase
     {
-        private ServersManager manager;
+        private IServerManager manager;
 
-        public ServersController(ServersManager managerInput)
+        public ServersController(IServerManager managerInput)
         {
             manager = managerInput;
         }
@@ -42,7 +42,7 @@ namespace FlightControlWeb.Controllers
             {
                 return Ok();
             }
-            return NotFound();
+            return NotFound("Server wasn't found");
         }
     }
 }

@@ -13,10 +13,10 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class FlightPlanController : ControllerBase
     {
-        private MyFlightsManager myFlightsManager;
-        private ServersManager serversManager;
+        private IFlightsManager myFlightsManager;
+        private IServerManager serversManager;
 
-        public FlightPlanController(MyFlightsManager myFlightsManagerInput, ServersManager serversManagerInput)
+        public FlightPlanController(IFlightsManager myFlightsManagerInput, IServerManager serversManagerInput)
         {
             myFlightsManager = myFlightsManagerInput;
             serversManager = serversManagerInput;
@@ -34,14 +34,14 @@ namespace FlightControlWeb.Controllers
                     flightPlan = await Task.Run(() => serversManager.GetExternalPlan(id));
                     if (flightPlan == null)
                     {
-                        return NotFound();
+                        return NotFound("Flight plan wasn't found");
                     }
                 }
                 return Ok(flightPlan);
             }
             catch
             {
-                return BadRequest();
+                return BadRequest("Failed trying to get flight plan");
             }
         }
 

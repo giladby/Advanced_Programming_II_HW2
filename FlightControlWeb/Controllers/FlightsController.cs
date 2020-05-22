@@ -15,18 +15,19 @@ namespace FlightControlWeb.Controllers
     [ApiController]
     public class FlightsController : ControllerBase
     {
-        private MyFlightsManager myFlightsManager;
-        private ServersManager serversManager;
+        private IFlightsManager myFlightsManager;
+        private IServerManager serversManager;
 
-        public FlightsController(MyFlightsManager myFlightsManagerInput, ServersManager serversManagerInput)
+        public FlightsController(IFlightsManager myFlightsManagerInput, IServerManager serversManagerInput)
         {
             myFlightsManager = myFlightsManagerInput;
             serversManager = serversManagerInput;
         }
 
         // GET: api/Flights
-        [HttpGet]
-        public async Task<ActionResult> GetFlights([FromQuery] string relative_to, [FromQuery] string sync_all)
+        [HttpGet("{sync_all?}")]
+
+        public async Task<IActionResult> GetFlights([FromQuery] string relative_to)
         {
             try
             {
@@ -36,14 +37,18 @@ namespace FlightControlWeb.Controllers
                 ArrayList flights = myFlightsManager.GetFlightsByTime(time);
                 if (request.Contains("sync_all"))
                 {
-                    ArrayList externals = await Task.Run(() => serversManager.GetExternalFlights(time));
-                    flights.AddRange(externals);
+                    Tuple<bool, ArrayList> result = await Task.Run(() => serversManager.GetExternalFlights(time));
+                    if(result.Item1)
+                    {
+                        return BadRequest("Failed connecting with external server");
+                    }
+                    flights.AddRange(result.Item2);
                 }
                 return Ok(flights);
             }
             catch
             {
-                return BadRequest();
+                return BadRequest("Failed trying to get flights");
             }
         }
 
@@ -55,7 +60,7 @@ namespace FlightControlWeb.Controllers
             {
                 return Ok();
             }
-            return NotFound();
+            return NotFound("Flight wasn't found");
         }
     }
 }

@@ -59,8 +59,8 @@ function GetFlightsFunc() {
             }
         });
         flightsArr = dummyArr.slice();
-    }).fail(function () {
-        printError("Failed trying to get flights");
+    }).fail(function (error) {
+        printError(error.responseText);
     });
 }
 

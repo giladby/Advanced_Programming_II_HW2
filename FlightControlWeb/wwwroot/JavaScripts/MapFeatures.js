@@ -241,7 +241,7 @@ function getFlightPlanAndMark(flightId, source, external) {
             return;
         }
         MarkAirplane(data, flightId, source, external);
-    }).fail(function () {
-        printError("Failed trying to get flight plan");
+    }).fail(function (error) {
+        printError(error.responseText);
     });
 }

@@ -11,7 +11,7 @@ using System.Globalization;
 
 namespace FlightControlWeb.Models
 {
-    public class ServersManager
+    public class ServersManager : IServerManager
     {
         private IMemoryCache myCache;
         private object listLock;
@@ -83,20 +83,32 @@ namespace FlightControlWeb.Models
             return new ArrayList(flightsList);
         }
 
-        public ArrayList GetExternalFlights(DateTime dateTime)
+        public Tuple<bool, ArrayList> GetExternalFlights(DateTime dateTime)
         {
             var myExternalFlights = new ArrayList();
             var serversList = GetServersList();
             int listSize = serversList.Count;
             var tasks = new Task[listSize];
             int i = 0;
+            bool failed = false;
             foreach (Server server in serversList)
             {
-                tasks[i] = Task.Factory.StartNew(() => AddFlightsFromServer(server, dateTime, myExternalFlights));
+                tasks[i] = Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        AddFlightsFromServer(server, dateTime, myExternalFlights);
+                    }
+                    catch
+                    {
+                        failed = true;
+                        return;
+                    }
+                });
                 i++;
             }
             Task.WaitAll(tasks);
-            return myExternalFlights;
+            return new Tuple<bool, ArrayList>(failed, myExternalFlights);
         }
 
         private void AddFlightsFromServer(Server server, DateTime dateTime, ArrayList myExternalFlights)

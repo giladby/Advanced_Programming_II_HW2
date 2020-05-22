@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FlightControlWeb.Models
 {
-    public class MyFlightsManager
+    public class MyFlightsManager : IFlightsManager
     {
         private IMemoryCache myCache;
 
