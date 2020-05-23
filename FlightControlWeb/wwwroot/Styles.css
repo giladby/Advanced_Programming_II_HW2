@@ -1,0 +1,73 @@
+﻿
+body {
+    background-image: url("Images/backgroundImage.gif");
+}
+
+.mapRow {
+    border: 2px solid;
+    height: 500px;
+}
+
+.detailsRow {
+    border: 2px solid;
+    height: 300px;
+    background-color: #001934;
+}
+
+.flightsRow {
+    border: 2px solid;
+    height: 400px;
+    background-color: #212121;
+    z-index: 1;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    color: #ceb218;
+}
+
+.thead {
+    background-color: #161616;
+    color: #e5e5e5;
+}
+
+.detailsThead {
+    background-color: #002c5a;
+}
+
+.emptyRow {
+    height: 50px;
+}
+
+.img-fluid {
+    z-index: 2;
+    height: 400.5px;
+    right: 0.7px;
+    position: absolute;
+}
+
+.flightsTable {
+    height: 350px !important;
+    overflow: scroll;
+}
+
+
+.myFlightDetailsTable {
+    height: 250px !important;
+    overflow: scroll;
+}
+
+.map {
+    height: 496px;
+    width: 100%;
+}
+
+.errorMessage {
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
+    margin-bottom: 15px;
+    opacity: 1;
+    z-index: 3;
+    position: absolute;
+    left: 50%;
+}

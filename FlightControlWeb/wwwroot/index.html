@@ -4,9 +4,6 @@
     <meta charset="utf-8" />
     <link rel="shortcut icon" type="image/x-icon" href="Images/favicon.ico" />
     <link rel="stylesheet" href="OpenLayersMap/ol.css" type="text/css" />
-    <title>FlightControl</title>
-</head>
-<body>
     <!--jquery-->
     <script src="jQuery/jquery-3.5.0.js"></script>
     <script src="jQuery/jquery-3.5.0.min.js"></script>
@@ -22,96 +19,34 @@
     <script src="JavaScripts/Utils.js"></script>
     <!--map-->
     <script src="OpenLayersMap/ol.js"></script>
-    <!--design-->
-    <style>
-
-        .errorMessage {
-            padding: 20px;
-            background-color: #f44336; /* Red */
-            color: white;
-            margin-bottom: 15px;
-            opacity: 1;
-            z-index: 3;
-            position: absolute;
-            left: 50%;
-        }
-
-        .flightsListContainer {
-            border: 2px solid blue;
-            height: 400px;
-        }
-
-        .mapRow {
-            border: 2px solid orange;
-            height: 500px;
-        }
-
-        .detailsRow {
-            border: 2px solid green;
-            height: 300px;
-        }
-
-        .flightsRow {
-            border: 2px solid blue;
-            height: 400px;
-            z-index: 1;
-        }
-
-        .emptyRow {
-            height: 50px;
-        }
-
-        .img-fluid {
-            z-index: 2;
-            height: 400.5px;
-            right: 0.7px;
-            position: absolute;
-        }
-
-        .myFlightsTable {
-            height: 350px !important;
-            overflow: scroll;
-        }
-
-        .myExternalTable {
-            height: 350px !important;
-            overflow: scroll;
-        }
-
-        .myFlightDetailsTable {
-            height: 250px !important;
-            overflow: scroll;
-        }
-
-        .map {
-            height: 400px;
-            width: 100%;
-        }
-    </style>
+    <title>FlightControl</title>
+    <!--style-->
+    <link rel="stylesheet" href="Styles.css">
+</head>
+<body>
     <div id="errBox"></div>
     <div class="row emptyRow"></div>
     <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-6">
             <div class="row mapRow justify-content-center">
-                <h2>map</h2>
                 <div id="map" class="map"></div>
             </div>
             <div class="row detailsRow justify-content-center">
-                <h2>Flight Details</h2>
+                <h2 class="text-info">Flight Details</h2>
                 <div class="table myFlightDetailsTable">
-                    <table class="table table-hover">
-                        <thead class="thead-dark">
+                    <table class="table">
+                        <thead class="detailsThead text-white">
                             <tr>
-                                <th>Starting Location</th>
-                                <th>Ending Location</th>
+                                <th>Starting Location [lat,long]</th>
+                                <th>Ending Location [lat,long]</th>
                                 <th>Starting Time (UTC)</th>
                                 <th>Ending Time (UTC)</th>
                                 <th>Company</th>
                                 <th>Passangers</th>
                             </tr>
                         </thead>
-                        <tbody id="FlightDetailsBody"></tbody>
+                        <tbody id="FlightDetailsBody" class="text-white"></tbody>
                     </table>
                 </div>
             </div>
@@ -121,31 +56,31 @@
                 <img src="Images/dragAndDrop.png" class="img-fluid img-thumbnail" alt="Chania">
             </div>
             <div id="flightsList" class="row flightsRow justify-content-center">
-                <h2>My Flights</h2>
-                <div id="flightsTable" class="table myFlightsTable">
-                    <table class="table table-hover">
-                        <thead class="thead-dark">
+                <h2 class="text-warning">My Flights</h2>
+                <div id="flightsTable" class="table flightsTable">
+                    <table class="table">
+                        <thead class="thead">
                             <tr>
-                                <th>Delete</th>
                                 <th>Flight ID</th>
                                 <th>Company</th>
+                                <th></th>
                             </tr>
                         </thead>
-                        <tbody id="flightsTableBody"></tbody>
+                        <tbody class="text-warning bg-dark" id="flightsTableBody"></tbody>
                     </table>
                 </div>
             </div>
             <div class="row flightsRow justify-content-center">
-                <h2>External Flights</h2>
-                <div id="externalTable" class="table myExternalTable">
-                    <table class="table table-hover">
-                        <thead class="thead-dark">
+                <h2 class="text-warning">External Flights</h2>
+                <div id="externalTable" class="table flightsTable">
+                    <table class="table">
+                        <thead class="thead">
                             <tr>
                                 <th>Flight ID</th>
                                 <th>Company</th>
                             </tr>
                         </thead>
-                        <tbody id="externalTableBody"></tbody>
+                        <tbody class="text-warning bg-dark" id="externalTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -157,14 +92,11 @@
         var image = document.getElementById("dragAndDropImage");
         image.style.visibility = "hidden";
         $("#myErrorMsg").fadeOut(0);
-        
         var dropZone = document.getElementById("flightsList");
         dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
         let map;
         let defaultAirplaneImage = 'Images/airplane.png';
         let defaultAirplaneScale = 0.05;
-        
-        
         DisplayMap();
         FlightsLoop();
     </script>

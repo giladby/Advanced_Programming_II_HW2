@@ -1,11 +1,9 @@
-﻿
-async function FlightsLoop() {
+﻿async function FlightsLoop() {
     while (true) {
         GetFlightsFunc();
-        await Sleep(5000);
+        await Sleep(1000);
     }
 }
-
 
 var flightsArr = [];
 function GetFlightsFunc() {
@@ -13,7 +11,15 @@ function GetFlightsFunc() {
     let dummyArr = [];
     let flightUrl = "../api/Flights?relative_to=" + dateAndTime + "&sync_all";
     $.get(flightUrl, function (data) {
+        if (!data) {
+            printError("Received invalid flight");
+            return;
+        } 
         data.forEach(function (flight) {
+            if (!IsFlightValid) {
+                printError("Received invalid flight");
+                return;
+            }
             let id = flight.flight_id;
             let latitude = flight.latitude;
             let longitude = flight.longitude;
@@ -35,9 +41,11 @@ function GetFlightsFunc() {
                     $("#externalTableBody").append(tr);
 
                 } else {
-                    let tr = "<tr id=\"" + id + "\"><td><input type =\"button\" value=\"X\" onclick=\"deleteByButton('"
-                        + id + "')\"/></td>" +
-                        "<td>" + id + "</td><td>" + company + "</td></tr>";
+                    let tr = "<tr id=\"" + id + "\">" +
+                        "<td>" + id + "</td><td>" + company + "</td>" +
+                        "<td><input type=\"button\" class=\"btn btn-danger btn-sm\"" +
+                        "value =\"X\" onclick=\"deleteByButton('" +
+                        id + "')\"/></td></tr>";
                     $("#flightsTableBody").append(tr);
                 }
                 

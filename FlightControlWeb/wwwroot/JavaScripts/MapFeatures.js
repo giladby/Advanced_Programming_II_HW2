@@ -129,27 +129,10 @@ function MarkAirplane(data, name, source, external) {
     }
     
     let myFlightsRow = document.getElementById(name);
-    myFlightsRow.style.backgroundColor = "yellow";
+    myFlightsRow.style.backgroundColor = "#ffd800";
+    myFlightsRow.style.color = "#272727";
     drawRouteLines(data);
     currentMarked = newAirplane;
-}
-
-function IsFlightPlanValid(flightPlan) {
-    if (!flightPlan) {
-        return false;
-    }
-    if ((flightPlan.passengers == null) || !flightPlan.company_name || !flightPlan.initial_location
-        || (flightPlan.initial_location.longitude == null) || (flightPlan.initial_location.latitude == null)
-        || !flightPlan.initial_location.date_time || !flightPlan.segments) {
-        return false;
-    } else {
-        flightPlan.segments.forEach(function (segment) {
-            if ((segment.longitude == null) || (segment.latitude == null) || (segment.timespan_seconds == null)) {
-                return false;
-            }
-        });
-    }
-    return true;
 }
 
 function UnmarkAirplane(update) {
@@ -169,6 +152,7 @@ function emptyCurrentMarked(update) {
     let id = currentMarked.get('name');
     let myFlightsRow = document.getElementById(id);
     myFlightsRow.style.backgroundColor = "";
+    myFlightsRow.style.color = "";
     removeRouteLines();
     currentMarked = null;
 }
@@ -183,7 +167,8 @@ function drawRouteLines(data) {
     let lineStyle = [
         new ol.style.Style({
             stroke: new ol.style.Stroke({
-                color: 'blue',
+                color: '#5162cb',
+                opacity: 0.1,
                 lineDash: [4, 8],
                 lineCap: 'square',
                 width: 5
