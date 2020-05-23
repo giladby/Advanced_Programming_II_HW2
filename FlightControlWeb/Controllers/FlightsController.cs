@@ -18,7 +18,8 @@ namespace FlightControlWeb.Controllers
         private IFlightsManager myFlightsManager;
         private IServersManager serversManager;
 
-        public FlightsController(IFlightsManager myFlightsManagerInput, IServersManager serversManagerInput)
+        public FlightsController(IFlightsManager myFlightsManagerInput,
+            IServersManager serversManagerInput)
         {
             myFlightsManager = myFlightsManagerInput;
             serversManager = serversManagerInput;
@@ -26,20 +27,25 @@ namespace FlightControlWeb.Controllers
 
         // GET: api/Flights
         [HttpGet("{sync_all?}")]
-
         public async Task<IActionResult> GetFlights([FromQuery] string relative_to)
         {
             try
             {
                 string request = Request.QueryString.Value;
+                // convert relative_to string to DateTime object
                 DateTime time = DateTime.ParseExact(relative_to, "yyyy-MM-ddTHH:mm:ssZ",
                 System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
+                // getting the inner server flights
                 ArrayList flights = myFlightsManager.GetFlightsByTime(time);
+                // if also need to check the servers
                 if (request.Contains("sync_all"))
                 {
-                    Tuple<bool, ArrayList> result = await Task.Run(() => serversManager.GetExternalFlights(time));
+                    // getting all servers flights
+                    Tuple<bool, ArrayList> result = await Task.Run(
+                        () => serversManager.GetExternalFlights(time));
                     bool failed = result.Item1;
                     ArrayList externalFlights = result.Item2;
+                    // if the request to the servers failed
                     if (failed)
                     {
                         return BadRequest("Failed receiving flights from servers");
@@ -54,7 +60,7 @@ namespace FlightControlWeb.Controllers
             }
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/Flights/{id}
         [HttpDelete("{id}")]
         public ActionResult DeleteFlight(string id)
         {
@@ -62,6 +68,7 @@ namespace FlightControlWeb.Controllers
             {
                 return Ok();
             }
+            // if the flight was not found
             return NotFound("Flight wasn't found");
         }
     }

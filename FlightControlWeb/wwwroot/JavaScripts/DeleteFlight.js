@@ -1,4 +1,4 @@
-﻿function DeleteFlightFunc(flightId) {
+﻿function deleteFlightFunc(flightId) {
     let flightUrl = "../api/Flights/" + flightId;
     $.ajax({
         type: 'delete',

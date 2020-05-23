@@ -53,7 +53,7 @@
         </div>
         <div class="col-md-4">
             <div id="dragAndDropImage">
-                <img src="Images/dragAndDrop.png" class="img-fluid img-thumbnail" alt="Chania">
+                <img src="Images/dragAndDrop.png" class="dndImage img-fluid img-thumbnail" alt="Chania">
             </div>
             <div id="flightsList" class="row flightsRow justify-content-center">
                 <h2 class="text-warning">My Flights</h2>
@@ -93,12 +93,12 @@
         image.style.visibility = "hidden";
         $("#myErrorMsg").fadeOut(0);
         var dropZone = document.getElementById("flightsList");
-        dropZone.addEventListener('dragleave', DragAndDropFunc(), false);
+        dropZone.addEventListener('dragleave', dragAndDropFunc(), false);
         let map;
         let defaultAirplaneImage = 'Images/airplane.png';
         let defaultAirplaneScale = 0.05;
-        DisplayMap();
-        FlightsLoop();
+        displayMap();
+        flightsLoop();
     </script>
 </body>
 </html>

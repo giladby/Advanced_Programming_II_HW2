@@ -17,7 +17,8 @@ namespace FlightControlWeb.Models
             myCache = cache;
         }
 
-        private void SaveFlightPlansAndIds(List<FlightPlan> flightPlans, Dictionary<string, FlightPlan> flightIds)
+        private void SaveFlightPlansAndIds(List<FlightPlan> flightPlans,
+            Dictionary<string, FlightPlan> flightIds)
         {
             SaveFlightPlans(flightPlans);
             SaveFlightIds(flightIds);
@@ -33,6 +34,7 @@ namespace FlightControlWeb.Models
             myCache.Set("flightIds", flightIds);
         }
 
+        // get the flight ids dictionary from the cache
         private Dictionary<string, FlightPlan> GetFlightIds()
         {
             Dictionary<string, FlightPlan> flightIds;
@@ -47,6 +49,7 @@ namespace FlightControlWeb.Models
             return flightIds;
         }
 
+        // get the flight plans list from the cache
         private List<FlightPlan> GetFlightPlans()
         {
             List<FlightPlan> flightPlans;
@@ -70,6 +73,7 @@ namespace FlightControlWeb.Models
             SaveFlightPlansAndIds(flightPlans, flightIds);
         }
 
+        // generate a random id string of the form 'AA1111'
         private string GenerateFlightId()
         {
             string id = "";
@@ -90,6 +94,7 @@ namespace FlightControlWeb.Models
         {
             string id;
             Dictionary<string, FlightPlan> flightIds = GetFlightIds();
+            // generate id until it is unique
             while (true)
             {
                 id = GenerateFlightId();
@@ -101,11 +106,13 @@ namespace FlightControlWeb.Models
             AddFlightPlanToCache(flightPlan, id);
         }
 
+        // delete a flight plan with the given id, return false if the flight was not found
         public bool DeleteFlightPlan(string id)
         {
             bool deleted = false;
             var flightPlans = GetFlightPlans();
             var flightIds = GetFlightIds();
+            // if the flight plan was found
             if (flightIds.ContainsKey(id))
             {
                 var myFlightPlan = flightIds[id];
@@ -127,6 +134,7 @@ namespace FlightControlWeb.Models
             return null;
         }
 
+        // get the location of the given flight plan relative to the given dateTime
         private Tuple<double, double> GetLocation(FlightPlan flightPlan, DateTime dateTime)
         {
             double longitude = flightPlan.InitialLocation.Longitude;
@@ -135,21 +143,26 @@ namespace FlightControlWeb.Models
             double timeGap = (dateTime - startTime).TotalSeconds;
             double distance;
             double ratio;
+            // if the given time is the initial time
             if (timeGap == 0)
             {
                 return new Tuple<double, double>(longitude, latitude);
             }
             foreach (FlightSegment currentSegment in flightPlan.Segments)
             {
+                // if the given time is in this segment
                 if (timeGap <= currentSegment.TimespanSeconds)
                 {
+                    // get the time ratio
                     ratio = timeGap / currentSegment.TimespanSeconds;
+                    // calculate the new longitude and latitude with the ratio addition
                     distance = currentSegment.Longitude - longitude;
                     longitude += ratio * distance;
                     distance = currentSegment.Latitude - latitude;
                     latitude += ratio * distance;
                     break;
                 }
+                // remove this segment time
                 timeGap -= currentSegment.TimespanSeconds;
                 longitude = currentSegment.Longitude;
                 latitude = currentSegment.Latitude;
@@ -157,20 +170,24 @@ namespace FlightControlWeb.Models
             return new Tuple<double, double>(longitude, latitude);
         }
 
+        // create a flight with the given dateTime from the given flight plan
         public Flight GetFlight(FlightPlan flightPlan, DateTime dateTime)
         {
             var location = GetLocation(flightPlan, dateTime);
             double longitude = location.Item1;
             double latitude = location.Item2;
             var flightIds = GetFlightIds();
+            // get the flight plan id
             string id = flightIds.FirstOrDefault(x => x.Value == flightPlan).Key;
             if (id == null)
             {
                 return null;
             }
-            return new Flight(id, longitude, latitude, flightPlan.Passengers, flightPlan.CompanyName, dateTime, false);
+            return new Flight(id, longitude, latitude, flightPlan.Passengers,
+                flightPlan.CompanyName, dateTime, false);
         }
 
+        // calculate the ending time of the given flight plan
         private DateTime GetEndTime(FlightPlan flightPlan)
         {
             var time = flightPlan.InitialLocation.MyDateTime;
@@ -180,6 +197,7 @@ namespace FlightControlWeb.Models
                 {
                     time = time.AddSeconds(segment.TimespanSeconds);
                 }
+                // if the current segment timespan makes time bigger than the max time possible
                 catch
                 {
                     return DateTime.MaxValue;
@@ -188,6 +206,7 @@ namespace FlightControlWeb.Models
             return time;
         }
 
+        // get all the flights relative to the given dateTime
         public ArrayList GetFlightsByTime(DateTime dateTime)
         {
             var flights = new ArrayList();
@@ -195,6 +214,7 @@ namespace FlightControlWeb.Models
             foreach (FlightPlan flightPlan in flightPlans)
             {
                 var endTime = GetEndTime(flightPlan);
+                // if the flight plan is active in the given dateTime
                 if ((DateTime.Compare(dateTime, flightPlan.InitialLocation.MyDateTime) >= 0)
                     && (DateTime.Compare(dateTime, endTime) <= 0))
                 {

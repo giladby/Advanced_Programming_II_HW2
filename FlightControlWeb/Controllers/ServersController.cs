@@ -19,14 +19,14 @@ namespace FlightControlWeb.Controllers
             manager = managerInput;
         }
 
-        // GET: api/Servers
+        // GET: api/servers
         [HttpGet]
         public ActionResult GetServers()
         {
             return Ok(manager.GetServersList());
         }
 
-        // POST: api/Servers
+        // POST: api/servers
         [HttpPost]
         public ActionResult AddServer([FromBody] Server server)
         {
@@ -34,7 +34,7 @@ namespace FlightControlWeb.Controllers
             return Ok();
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/servers/{id}
         [HttpDelete("{id}")]
         public ActionResult Delete(string id)
         {
@@ -42,6 +42,7 @@ namespace FlightControlWeb.Controllers
             {
                 return Ok();
             }
+            // if the server was not found
             return NotFound("Server wasn't found");
         }
     }

@@ -19,6 +19,7 @@ namespace XUnitFlightController
         [Fact]
         public async Task GetFlightsAllTests()
         {
+            // test all 3 return cases of the GetFlights function
             await GetFlightsTestSuccess();
             await GetFlightsTestMyFlightsFail();
             await GetFlightsTestServersFail();
@@ -38,10 +39,10 @@ namespace XUnitFlightController
         {
             await GetFlightsTest(false, true);
         }
-        
+        // test the GetFlights function with given fail flags
         private async Task GetFlightsTest(bool myFlightsFailFlag, bool serversFailFlag)
         {
-            //Arrange
+            // Arrange
             string relativeTo = "2020-10-10T10:10:10Z";
             DateTime dateTime = DateTime.ParseExact(relativeTo, "yyyy-MM-ddTHH:mm:ssZ",
                 System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
@@ -53,23 +54,31 @@ namespace XUnitFlightController
             Flight flight6 = new Flight("FF6666", 60, 60, 600, "QatarAirways", dateTime, true);
             ArrayList myFlights = new ArrayList { flight1, flight2, flight3 };
             ArrayList externalFlights = new ArrayList { flight4, flight5, flight6 };
+            // mock the flightsManager and the serversManager
             var flightsMock = new Mock<IFlightsManager>();
             var serversMock = new Mock<IServersManager>();
             if (myFlightsFailFlag)
             {
-                flightsMock.Setup(flightsMock => flightsMock.GetFlightsByTime(dateTime)).Throws(new Exception());
+                // make the function throw an exception
+                flightsMock.Setup(flightsMock =>
+                flightsMock.GetFlightsByTime(dateTime)).Throws(new Exception());
             } else
             {
-                flightsMock.Setup(flightsMock => flightsMock.GetFlightsByTime(dateTime)).Returns(myFlights);
+                // make the function return the flights array
+                flightsMock.Setup(flightsMock =>
+                flightsMock.GetFlightsByTime(dateTime)).Returns(myFlights);
             }
+            // make the function return the fail flag with the external flights array
             serversMock.Setup(serversMock => serversMock.GetExternalFlights(dateTime))
                 .Returns(new Tuple<bool, ArrayList>(serversFailFlag, externalFlights));
+            // create an http context mock with the '?sync_all' flag in its request query
             var context = new Mock<HttpContext>();
             context.SetupGet(x => x.Request.QueryString).Returns(new QueryString("?sync_all"));
             var controllerContext = new ControllerContext()
             {
                 HttpContext = context.Object,
             };
+            // create the controller to be tested with the mocks
             var flightsController = new FlightsController(flightsMock.Object, serversMock.Object)
             {
                 ControllerContext = controllerContext,
@@ -79,18 +88,21 @@ namespace XUnitFlightController
             // Assert
             if (myFlightsFailFlag)
             {
+                // check that the result is the correct bad request
                 Assert.IsType<BadRequestObjectResult>(flights);
                 var badRequestResult = flights as BadRequestObjectResult;
                 Assert.Equal("Failed receiving flights", badRequestResult.Value);
             }
             else if (serversFailFlag)
             {
+                // check that the result is the correct bad request
                 Assert.IsType<BadRequestObjectResult>(flights);
                 var badRequestResult = flights as BadRequestObjectResult;
                 Assert.Equal("Failed receiving flights from servers", badRequestResult.Value);
             }
             else
             {
+                // check with various tests that the result is valid
                 Assert.IsType<OkObjectResult>(flights);
                 var okResult = flights as OkObjectResult;
                 Assert.IsType<ArrayList>(okResult.Value);

@@ -1,5 +1,4 @@
-﻿
-body {
+﻿body {
     background-image: url("Images/backgroundImage.gif");
 }
 
@@ -21,10 +20,6 @@ body {
     z-index: 1;
 }
 
-.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-    color: #ceb218;
-}
-
 .thead {
     background-color: #161616;
     color: #e5e5e5;
@@ -38,7 +33,7 @@ body {
     height: 50px;
 }
 
-.img-fluid {
+.dndImage {
     z-index: 2;
     height: 400.5px;
     right: 0.7px;
@@ -49,7 +44,6 @@ body {
     height: 350px !important;
     overflow: scroll;
 }
-
 
 .myFlightDetailsTable {
     height: 250px !important;

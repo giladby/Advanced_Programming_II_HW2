@@ -23,7 +23,8 @@ namespace FlightControlWeb.Models
 
         public FlightSegment() { }
 
-        public FlightSegment(double longitudeInput, double latitudeInput, double timespanSecondsInput)
+        public FlightSegment(double longitudeInput, double latitudeInput,
+            double timespanSecondsInput)
         {
             Longitude = longitudeInput;
             Latitude = latitudeInput;

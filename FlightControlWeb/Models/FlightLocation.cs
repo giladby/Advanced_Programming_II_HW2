@@ -24,7 +24,8 @@ namespace FlightControlWeb.Models
 
         public FlightLocation() { }
 
-        public FlightLocation(double longitudeInput, double latitudeInput, DateTime myDateTimeInput)
+        public FlightLocation(double longitudeInput, double latitudeInput,
+            DateTime myDateTimeInput)
         {
             Longitude = longitudeInput;
             Latitude = latitudeInput;

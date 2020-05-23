@@ -1,4 +1,4 @@
-﻿function DragAndDropFileController(selector, onDropCallback) {
+﻿function dragAndDropFileController(selector, onDropCallback) {
     let el_ = document.getElementById("flightsList");
     let image = document.getElementById("dragAndDropImage");
     this.dragenter = function (e) {
@@ -15,7 +15,6 @@
         e.stopPropagation();
         e.preventDefault();
         image.style.visibility = "hidden";
-        
     };
     this.drop = function (e) {
         e.stopPropagation();
@@ -30,8 +29,8 @@
     image.addEventListener('drop', this.drop, false);
 }
 
-function DragAndDropFunc() {
-    new DragAndDropFileController('body', function (files) {
+function dragAndDropFunc() {
+    new dragAndDropFileController('body', function (files) {
         let f = files[0];
         if (!f) {
             return;
@@ -41,7 +40,7 @@ function DragAndDropFunc() {
             reader.onloadend = function (e) {
                 try {
                     let result = JSON.parse(this.result);
-                    AddFlightPlanFunc(result);
+                    addFlightPlanFunc(result);
                 } catch {
                     printError("Received invalid JSON file");
                 }

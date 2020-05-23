@@ -1,7 +1,7 @@
 ﻿let currentMarked = null;
-
-function DisplayMap() {
-    let myKey = 'nw9X5t1VORpRClqJavkK~XN8n9COo6PKhDoEQJKEZQA~AtnOCAe8bf0NUKZkOULqwpGPW-7-diFVfJClHL_VUDdmlzB-SYSECuKD1K98KyLS';
+function displayMap() {
+    let myKey = 'nw9X5t1VORpRClqJavkK~XN8n9COo6PKhDoEQJKEZQA~' +
+        'AtnOCAe8bf0NUKZkOULqwpGPW-7-diFVfJClHL_VUDdmlzB-SYSECuKD1K98KyLS';
     map = new ol.Map({
         layers: [
             new ol.layer.Tile({
@@ -23,7 +23,6 @@ function DisplayMap() {
             zoom: 0
         })
     });
-
     map.on("click", function (e) {
         let isMapLayer = true;
         let found = false;
@@ -32,23 +31,34 @@ function DisplayMap() {
                 return;
             }
             isMapLayer = false;
-            tryMarkAirplane(layer.get('name'), layer.getSource(), layer.get('external'));
+            tryMarkAirplane(layer.get('name'), layer.getSource());
             found = true;
         })
         if (isMapLayer) {
-            UnmarkAirplane(false);
+            unmarkAirplane(false);
         }
     });
 }
 
-
-function tryMarkAirplane(name, source, external) {
-    
+function tryMarkAirplane(name, source) {
     if ((currentMarked != null) && (currentMarked.get('name') == name)) {
         return;
     }
-    UnmarkAirplane(true);
-    getFlightPlanAndMark(name, source, external);
+    unmarkAirplane(true);
+    getFlightPlanAndMark(name, source);
+}
+
+function getFlightPlanAndMark(flightId, source) {
+    let flightPlanUrl = "../api/FlightPlan/" + flightId;
+    $.get(flightPlanUrl, function (data) {
+        if (!isFlightPlanValid(data)) {
+            printError("Received invalid flight plan");
+            return;
+        }
+        markAirplane(data, flightId, source);
+    }).fail(function (error) {
+        printError(error.responseText);
+    });
 }
 
 function createSource(latitude, longitude) {
@@ -59,10 +69,9 @@ function createSource(latitude, longitude) {
     });
 }
 
-function AddAirplane(flightId, source, isExternal, image, scale) {
+function addAirplane(flightId, source, image, scale) {
     let airplane = new ol.layer.Vector({
         name: flightId,
-        external: isExternal,
         source: source,
         style: new ol.style.Style({
             image: new ol.style.Icon(({
@@ -75,9 +84,7 @@ function AddAirplane(flightId, source, isExternal, image, scale) {
     return airplane;
 }
 
-
-
-function ChangeAirplaneLocation(flightId, latitude, longitude) {
+function changeAirplaneLocation(flightId, latitude, longitude) {
     map.getLayers().forEach(function (layer) {
         if (layer.get('name') == flightId) {
             layer.getSource().getFeatures()[0].setGeometry(
@@ -87,8 +94,7 @@ function ChangeAirplaneLocation(flightId, latitude, longitude) {
     })
 }
 
-
-function DeleteAirplane(flightId, update) {
+function deleteAirplane(flightId, update) {
     let layerToDelete = getLayer(flightId);
     if (layerToDelete == currentMarked) {
         emptyCurrentMarked(update);
@@ -107,18 +113,15 @@ function getLayer(name) {
     return myLayer;
 }
 
-function MarkAirplane(data, name, source, external) {
-
-    DeleteAirplane(name, true);
-
-    let newAirplane = AddAirplane(name, source, external, 'Images/markedAirplane.png', 0.1);
-    let endTriple = getEndTriple(data);
-
-
-    let tr = "<tr id=\"flightDetailsRow\"><td>[" + data.initial_location.latitude + "," + data.initial_location.longitude + "]</td>" +
-             "<td>[" + endTriple[0] + "," + endTriple[1] + "]</td>" +
+function markAirplane(data, name, source) {
+    deleteAirplane(name, true);
+    let newAirplane = addAirplane(name, source, 'Images/markedAirplane.png', 0.1);
+    let endInfo = getEndInformation(data);
+    let tr = "<tr id=\"flightDetailsRow\"><td>[" + data.initial_location.latitude +
+             "," + data.initial_location.longitude + "]</td>" +
+             "<td>[" + endInfo[0] + "," + endInfo[1] + "]</td>" +
              "<td>" + data.initial_location.date_time + "</td>" +
-             "<td>" + endTriple[2] + "</td>" +
+             "<td>" + endInfo[2] + "</td>" +
              "<td>" + data.company_name + "</td>" +
              "<td>" + data.passengers + "</td></tr>";
     let flightDetailsRow = document.getElementById("flightDetailsRow");
@@ -127,7 +130,6 @@ function MarkAirplane(data, name, source, external) {
     } else {
         $("#FlightDetailsBody").append(tr);
     }
-    
     let myFlightsRow = document.getElementById(name);
     myFlightsRow.style.backgroundColor = "#ffd800";
     myFlightsRow.style.color = "#272727";
@@ -135,14 +137,14 @@ function MarkAirplane(data, name, source, external) {
     currentMarked = newAirplane;
 }
 
-function UnmarkAirplane(update) {
+function unmarkAirplane(update) {
     if (currentMarked == null) {
         return;
     }
     let name = currentMarked.get('name');
     let previous = currentMarked;
-    DeleteAirplane(name, update);
-    AddAirplane(name, previous.getSource(), previous.get('external'), defaultAirplaneImage, defaultAirplaneScale);
+    deleteAirplane(name, update);
+    addAirplane(name, previous.getSource(), defaultAirplaneImage, defaultAirplaneScale);
 }
 
 function emptyCurrentMarked(update) {
@@ -159,11 +161,11 @@ function emptyCurrentMarked(update) {
 
 function drawRouteLines(data) {
     let pointsArr = [];
-    pointsArr.push(ol.proj.fromLonLat([data.initial_location.longitude, data.initial_location.latitude]));
+    pointsArr.push(ol.proj.fromLonLat([data.initial_location.longitude,
+    data.initial_location.latitude]));
     data.segments.forEach(function (segment) {
         pointsArr.push(ol.proj.fromLonLat([segment.longitude, segment.latitude]));
     });
-
     let lineStyle = [
         new ol.style.Style({
             stroke: new ol.style.Stroke({
@@ -193,19 +195,7 @@ function removeRouteLines() {
     map.removeLayer(layerToDelete);
 }
 
-function convertTime(time, secondsToAdd) {
-    time = time.substring(0, time.length - 1);
-    time = new Date(time);
-    time = new Date(time.getTime() + 1000 * secondsToAdd);
-    if (isNaN(time.getTime())) {
-        return "Ending time exceeded last date possible";
-    }
-    time = new Date(time.getTime()).toISOString();
-    time = time.substr(0, (time.length - 5)) + "Z";
-    return time;
-}
-
-function getEndTriple(data) {
+function getEndInformation(data) {
     let totalSeconds = 0;
     let longitude;
     let latitude;
@@ -216,17 +206,4 @@ function getEndTriple(data) {
     });
     endTime = convertTime(data.initial_location.date_time, totalSeconds);
     return [latitude, longitude, endTime];
-}
-
-function getFlightPlanAndMark(flightId, source, external) {
-    let flightPlanUrl = "../api/FlightPlan/" + flightId;
-    $.get(flightPlanUrl, function (data) {
-        if (!IsFlightPlanValid(data)) {
-            printError("Received invalid flight plan");
-            return;
-        }
-        MarkAirplane(data, flightId, source, external);
-    }).fail(function (error) {
-        printError(error.responseText);
-    });
 }

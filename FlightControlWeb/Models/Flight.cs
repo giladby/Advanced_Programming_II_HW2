@@ -38,8 +38,9 @@ namespace FlightControlWeb.Models
         [JsonProperty("is_external")]
         public bool IsExternal { get; set; }
 
-        public Flight(string flightIdInput, double longitudeInput, double latitudeInput, int passengersInput,
-            string companyNameInput, DateTime myDateTimeInput, bool isExternalInput)
+        public Flight(string flightIdInput, double longitudeInput, double latitudeInput,
+            int passengersInput,string companyNameInput, DateTime myDateTimeInput,
+            bool isExternalInput)
         {
             FlightId = flightIdInput;
             Longitude = longitudeInput;

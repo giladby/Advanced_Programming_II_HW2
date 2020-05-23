@@ -16,7 +16,8 @@ namespace FlightControlWeb.Controllers
         private IFlightsManager myFlightsManager;
         private IServersManager serversManager;
 
-        public FlightPlanController(IFlightsManager myFlightsManagerInput, IServersManager serversManagerInput)
+        public FlightPlanController(IFlightsManager myFlightsManagerInput,
+            IServersManager serversManagerInput)
         {
             myFlightsManager = myFlightsManagerInput;
             serversManager = serversManagerInput;
@@ -28,20 +29,27 @@ namespace FlightControlWeb.Controllers
         {
             try
             {
+                // trying to get the flight plan from the inner server
                 FlightPlan flightPlan = myFlightsManager.GetFlightPlan(id);
+                // if the flight plan was not found
                 if (flightPlan == null)
                 {
-                    Tuple<bool, FlightPlan> result = await Task.Run(() => serversManager.GetExternalPlan(id));
+                    // trying to get the flight plan from the servers
+                    Tuple<bool, FlightPlan> result = await Task.Run(
+                        () => serversManager.GetExternalPlan(id));
+                    // if the flight plan was not found 
                     if (result == null)
                     {
                         return NotFound("Flight plan wasn't found");
                     }
                     bool failed = result.Item1;
                     FlightPlan externalFlightPlan = result.Item2;
+                    // if the request to the servers failed
                     if (failed)
                     {
                         return BadRequest("Failed receiving flight plan from server");
                     }
+                    // if the flight plan was not found 
                     if (externalFlightPlan == null)
                     {
                         return NotFound("Flight plan wasn't found");
