@@ -8,10 +8,9 @@ namespace FlightControlWeb.Models
 {
     public interface IServersManager
     {
-        public FlightPlan GetExternalPlan(string id);
+        public Tuple<bool, FlightPlan> GetExternalPlan(string id);
 
         public Tuple<bool, ArrayList> GetExternalFlights(DateTime dateTime);
-
 
         public List<Server> GetServersList();
 

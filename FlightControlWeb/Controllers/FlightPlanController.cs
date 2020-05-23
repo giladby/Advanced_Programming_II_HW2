@@ -31,17 +31,30 @@ namespace FlightControlWeb.Controllers
                 FlightPlan flightPlan = myFlightsManager.GetFlightPlan(id);
                 if (flightPlan == null)
                 {
-                    flightPlan = await Task.Run(() => serversManager.GetExternalPlan(id));
-                    if (flightPlan == null)
+                    Tuple<bool, FlightPlan> result = await Task.Run(() => serversManager.GetExternalPlan(id));
+                    if (result == null)
                     {
                         return NotFound("Flight plan wasn't found");
                     }
+                    bool failed = result.Item1;
+                    FlightPlan externalFlightPlan = result.Item2;
+                    if (failed)
+                    {
+                        return BadRequest("Failed receiving flight plan from server");
+                    }
+                    if (externalFlightPlan == null)
+                    {
+                        return NotFound("Flight plan wasn't found");
+                    }
+                    return Ok(externalFlightPlan);
+                } else
+                {
+                    return Ok(flightPlan);
                 }
-                return Ok(flightPlan);
             }
             catch
             {
-                return BadRequest("Failed trying to get flight plan");
+                return BadRequest("Failed receiving flight plan");
             }
         }
 

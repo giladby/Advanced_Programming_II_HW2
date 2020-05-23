@@ -24,16 +24,28 @@ namespace FlightControlWeb.Models
             dictLock = new object();
         }
 
-        public FlightPlan GetExternalPlan(string id)
+        public Tuple<bool, FlightPlan> GetExternalPlan(string id)
         {
+            bool failed = false;
+            FlightPlan flightPlan;
             var externalFlightIds = GetExternalFlightIds();
             if (externalFlightIds.ContainsKey(id))
             {
                 Server server = externalFlightIds[id];
-                FlightPlan flightPlan = GetFlightPlanFromServer(server, id);
-                return flightPlan;
+                try
+                {
+                    flightPlan = GetFlightPlanFromServer(server, id);
+                }
+                catch
+                {
+                    failed = true;
+                    flightPlan = null;
+                }
+                return new Tuple<bool, FlightPlan>(failed, flightPlan);
+            } else
+            {
+                return null;
             }
-            return null;
         }
 
         private string GetSerializedObject(string url)
@@ -67,7 +79,8 @@ namespace FlightControlWeb.Models
             {
                 return null;
             }
-            return JsonConvert.DeserializeObject<FlightPlan>(flightPlan);
+            //return JsonConvert.DeserializeObject<FlightPlan>(flightPlan);
+            return JsonConvert.DeserializeObject<FlightPlan>("blabla");
         }
 
         private ArrayList GetFlightsFromServer(Server server, DateTime dateTime)

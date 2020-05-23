@@ -2,7 +2,7 @@
 async function FlightsLoop() {
     while (true) {
         GetFlightsFunc();
-        await Sleep(10000);
+        await Sleep(5000);
     }
 }
 
