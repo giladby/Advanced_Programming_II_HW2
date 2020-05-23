@@ -30,8 +30,14 @@ namespace FlightControlWeb.Controllers
         [HttpPost]
         public ActionResult AddServer([FromBody] Server server)
         {
-            manager.AddServer(server);
-            return Ok();
+            if (manager.AddServer(server))
+            {
+                return Ok();
+            } else
+            {
+                return BadRequest("Received invalid server");
+            }
+            
         }
 
         // DELETE: api/servers/{id}

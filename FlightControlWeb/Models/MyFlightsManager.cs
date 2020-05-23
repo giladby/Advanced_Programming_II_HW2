@@ -89,9 +89,14 @@ namespace FlightControlWeb.Models
             }
             return id;
         }
-
-        public void AddFlightPlan(FlightPlan flightPlan)
+        // add the given flight plan, return false if failed
+        public bool AddFlightPlan(FlightPlan flightPlan)
         {
+            // if the flight plan is invalid
+            if (!IsFlightPlanValid(flightPlan))
+            {
+                return false;
+            }
             string id;
             Dictionary<string, FlightPlan> flightIds = GetFlightIds();
             // generate id until it is unique
@@ -104,6 +109,26 @@ namespace FlightControlWeb.Models
                 }
             }
             AddFlightPlanToCache(flightPlan, id);
+            return true;
+        }
+
+        // check if the given flight plan has valid parameters
+        private bool IsFlightPlanValid(FlightPlan flightPlan)
+        {
+            if (flightPlan == null)
+            {
+                return false;
+            }
+            if ((flightPlan.CompanyName == null) || (flightPlan.InitialLocation == null)
+                || (flightPlan.Segments == null))
+            {
+                return false;
+            }
+            if (flightPlan.InitialLocation.MyDateTime == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         // delete a flight plan with the given id, return false if the flight was not found

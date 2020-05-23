@@ -16,8 +16,8 @@ namespace FlightControlWeb.Models
         public List<Server> GetServersList();
         // get the external flight ids dictionary from the cache
         public Dictionary<string, Server> GetExternalFlightIds();
-        // add the given server
-        public void AddServer(Server server);
+        // add the given server, return false if failed
+        public bool AddServer(Server server);
         // delete a server with the given id, return false if server was not found
         public bool DeleteServer(string id);
     }

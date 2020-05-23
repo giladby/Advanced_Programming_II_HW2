@@ -198,11 +198,22 @@ namespace FlightControlWeb.Models
             return externalFlightIds;
         }
 
-        public void AddServer(Server server)
+        // add the given server, return false if failed
+        public bool AddServer(Server server)
         {
+            // check if the server is invalid
+            if (server == null)
+            {
+                return false;
+            }
+            if ((server.ServerId == null) || (server.ServerURL == null))
+            {
+                return false;
+            }
             var serversList = GetServersList();
             serversList.Add(server);
             SaveServersList(serversList);
+            return true;
         }
 
         private void SaveServersList(List<Server> serversList)

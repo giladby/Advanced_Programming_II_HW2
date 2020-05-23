@@ -8,8 +8,8 @@ namespace FlightControlWeb.Models
 {
     public interface IFlightsManager
     {
-        // add the given flight plan
-        public void AddFlightPlan(FlightPlan flightPlan);
+        // add the given flight plan, return false if failed
+        public bool AddFlightPlan(FlightPlan flightPlan);
         // delete a flight plan with the given id, return false if the flight was not found
         public bool DeleteFlightPlan(string id);
         // get a flight plan with the given id

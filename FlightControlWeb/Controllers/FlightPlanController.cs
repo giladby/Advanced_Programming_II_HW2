@@ -70,8 +70,14 @@ namespace FlightControlWeb.Controllers
         [HttpPost]
         public ActionResult AddFlightPlan([FromBody] FlightPlan flightPlan)
         {
-            myFlightsManager.AddFlightPlan(flightPlan);
-            return Ok();
+            if (myFlightsManager.AddFlightPlan(flightPlan))
+            {
+                return Ok();
+            } else
+            {
+                return BadRequest("Received invalid flight plan");
+            }
+            
         }
     }
 }
