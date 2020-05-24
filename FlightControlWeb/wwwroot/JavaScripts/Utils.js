@@ -1,10 +1,15 @@
-﻿let id = 0
+﻿// sleep for the given milliseconds
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+let id = 0;
 // prints the given error message to the user page
 async function printError(error) {
     id += 1;
-    idString = id.toString() + "error";
+    let idString = id.toString() + "error";
     // creates the error div string
-    let objString = "<div class=\"h4 errorMessage\" id=\"" + idString + "\">" +
+    var objString = "<div class=\"h4 errorMessage\" id=\"" + idString + "\">" +
         error + "</div>";
     // if this is not the first error
     if (id > 1) {
@@ -30,18 +35,14 @@ async function printError(error) {
     objTag.fadeOut();
 }
 
-// sleep for the given milliseconds
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // check if the given flight is valid
 function isFlightValid(flight) {
     if (!flight) {
         return false;
     }
-    if (!flight.flight_id || (flight.longitude == null) || (flight.latitude == null)
-        || (flight.passengers == null) || !flight.company_name || !flight.date_time
+    if (!flight.flight_id || (flight.longitude == null)
+        || (flight.latitude == null) || (flight.passengers == null)
+        || !flight.company_name || !flight.date_time
         || (flight.is_external == null)) {
         return false;
     }
@@ -54,17 +55,20 @@ function isFlightPlanValid(flightPlan) {
         return false;
     }
     if ((flightPlan.passengers == null) || !flightPlan.company_name
-        || !flightPlan.initial_location || (flightPlan.initial_location.longitude == null)
+        || !flightPlan.initial_location
+        || (flightPlan.initial_location.longitude == null)
         || (flightPlan.initial_location.latitude == null)
-        || !flightPlan.initial_location.date_time || !flightPlan.segments) {
+        || !flightPlan.initial_location.date_time
+        || !flightPlan.segments) {
         return false;
     } else {
-        flightPlan.segments.forEach(function (segment) {
+        let segment;
+        for (segment of flightPlan.segments) {
             if ((segment.longitude == null) || (segment.latitude == null)
                 || (segment.timespan_seconds == null)) {
                 return false;
             }
-        });
+        }
     }
     return true;
 }
@@ -72,8 +76,10 @@ function isFlightPlanValid(flightPlan) {
 // get the current date and time in UTC
 function makeDateAndTime() {
     let date = new Date();
-    let dateAndTime = new Date(date.getTime()).toISOString();
-    dateAndTime = dateAndTime.substr(0, (dateAndTime.length - 5)) + "Z";
+    let getTime = date.getTime();
+    let dateAndTime = new Date(getTime).toISOString();
+    let length = dateAndTime.length - 5;
+    dateAndTime = dateAndTime.substr(0, length) + "Z";
     return dateAndTime;
 }
 
@@ -81,10 +87,12 @@ function makeDateAndTime() {
 function convertTime(time, secondsToAdd) {
     time = new Date(time);
     time = new Date(time.getTime() + 1000 * secondsToAdd);
-    if (isNaN(time.getTime())) {
+    let getTime = time.getTime();
+    if (isNaN(getTime)) {
         return "Ending time exceeded last date possible";
     }
-    time = new Date(time.getTime()).toISOString();
-    time = time.substr(0, (time.length - 5)) + "Z";
+    time = new Date(getTime).toISOString();
+    let length = time.length - 5;
+    time = time.substr(0, length) + "Z";
     return time;
 }

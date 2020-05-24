@@ -23,7 +23,8 @@ namespace FlightControlWeb.Controllers
         [HttpGet]
         public ActionResult GetServers()
         {
-            return Ok(manager.GetServersList());
+            var serverList = manager.GetServersList();
+            return Ok(serverList);
         }
 
         // POST: api/servers

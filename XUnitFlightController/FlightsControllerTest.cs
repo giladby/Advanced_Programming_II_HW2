@@ -69,12 +69,14 @@ namespace XUnitFlightController
                 flightsMock.Setup(flightsMock =>
                 flightsMock.GetFlightsByTime(dateTime)).Returns(myFlights);
             }
+            var tuple = new Tuple<bool, ArrayList>(serversFailFlag, externalFlights);
             // make the function return the fail flag with the external flights array
             serversMock.Setup(serversMock => serversMock.GetExternalFlights(dateTime))
-                .Returns(new Tuple<bool, ArrayList>(serversFailFlag, externalFlights));
+                .Returns(tuple);
             // create an http context mock with the '?sync_all' flag in its request query
             var context = new Mock<HttpContext>();
-            context.SetupGet(x => x.Request.QueryString).Returns(new QueryString("?sync_all"));
+            var myQueryString = new QueryString("?sync_all");
+            context.SetupGet(x => x.Request.QueryString).Returns(myQueryString);
             var controllerContext = new ControllerContext()
             {
                 HttpContext = context.Object,

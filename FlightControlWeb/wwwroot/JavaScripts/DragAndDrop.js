@@ -61,7 +61,7 @@ function analyzeFiles(files) {
     }
     if (f.type.match('application/json')) {
         let reader = new FileReader();
-        reader.onloadend = function (e) {
+        reader.onloadend = function () {
             tryAddFlightPlan(this.result);
         };
         reader.readAsText(f);

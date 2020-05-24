@@ -81,7 +81,8 @@ namespace FlightControlWeb.Models
             string allChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             for (int i = 0; i < 2; i++)
             {
-                id += allChars[random.Next(allChars.Length)];
+                int rand = random.Next(allChars.Length);
+                id += allChars[rand];
             }
             for (int i = 0; i < 4; i++)
             {

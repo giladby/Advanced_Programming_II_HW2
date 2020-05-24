@@ -1,27 +1,39 @@
-﻿let currentMarked = null;
+﻿
+// generator function making layers
+function generateLayers(map) {
+    let layers = map.getLayers();
+    let generated = [];
+    layers.forEach(function (layer) {
+        generated.push(layer);
+    });
+    return generated;
+}
+
+let currentMarked = null;
 function displayMap() {
     // the bing map key
-    let myKey = 'nw9X5t1VORpRClqJavkK~XN8n9COo6PKhDoEQJKEZQA~' +
-        'AtnOCAe8bf0NUKZkOULqwpGPW-7-diFVfJClHL_VUDdmlzB-SYSECuKD1K98KyLS';
+    let myKey = "nw9X5t1VORpRClqJavkK~XN8n9COo6PKhDoEQJKEZQA~" +
+        "AtnOCAe8bf0NUKZkOULqwpGPW-7-diFVfJClHL_VUDdmlzB-SYSECuKD1K98KyLS";
     // adds the map with 0 zoom on israel
     map = new ol.Map({
         layers: [
             new ol.layer.Tile({
-                name : 'mapLayer',
+                name: "mapLayer",
                 visible: true,
                 source: new ol.source.BingMaps({
                     key: myKey,
-                    imagerySet: 'Road'
+                    imagerySet: "Road"
                 })
             })
         ],
         controls: ol.control.defaults({
             attribution: false,
-            zoom: false,
+            zoom: false
         }),
-        target: 'map',
+        target: "map",
         view: new ol.View({
-            center: ol.proj.transform([32.003657, 34.872770], 'EPSG:4326', 'EPSG:3857'),
+            center: ol.proj.transform([32.003657, 34.872770],
+                "EPSG:4326", "EPSG:3857"),
             zoom: 0
         })
     });
@@ -36,7 +48,7 @@ function MapClickOn(e) {
     let found = { flag: false };
     map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
         HandleLayerAtPixel(layer, isMapLayer, found);
-    })
+    });
     if (isMapLayer.flag) {
         unmarkAirplane(false);
     }
@@ -44,17 +56,19 @@ function MapClickOn(e) {
 
 function HandleLayerAtPixel(layer, isMapLayer, found) {
     // if this is a flight route or the layer was already found
-    if (layer.get('name') == 'lines' || found.flag) {
+    if (layer.get("name") == "lines" || found.flag) {
         return;
     }
     isMapLayer.flag = false;
-    tryMarkAirplane(layer.get('name'), layer.getSource());
+    let source = layer.getSource();
+    let name = layer.get("name");
+    tryMarkAirplane(name, source);
     found.flag = true;
 }
 
 // trying to mark the airplane with the given name
 function tryMarkAirplane(name, source) {
-    if ((currentMarked != null) && (currentMarked.get('name') == name)) {
+    if ((currentMarked != null) && (currentMarked.get("name") == name)) {
         return;
     }
     unmarkAirplane(true);
@@ -82,23 +96,24 @@ function HandleFlightPlanData(data, flightId, source) {
 }
 
 function createSource(latitude, longitude) {
+    let point = ol.proj.fromLonLat([longitude, latitude]);
     return new ol.source.Vector({
         features: [new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])),
+            geometry: new ol.geom.Point(point)
         })]
     });
 }
 
 // adds a new airplane with the given parameters to the map
-function addAirplane(flightId, source, image, scale) {
+function addAirplane(flightId, sourceInput, image, scaleInput) {
     let airplane = new ol.layer.Vector({
         name: flightId,
-        source: source,
+        source: sourceInput,
         style: new ol.style.Style({
-            image: new ol.style.Icon(({
+            image: new ol.style.Icon({
                 src: image,
-                scale: scale
-            }))
+                scale: scaleInput
+            })
         })
     });
     map.addLayer(airplane);
@@ -107,16 +122,19 @@ function addAirplane(flightId, source, image, scale) {
 
 // change the airplane location to the given coordinates
 function changeAirplaneLocation(flightId, latitude, longitude) {
-    map.getLayers().forEach(function (layer) {
+    let layers = generateLayers(map);
+    let layer;
+    for (layer of layers) {
         tryToChangeAirplaneLocation(layer, flightId, latitude, longitude);
-    })
+    }
 }
 
 // change location if the given layer has the given flight id
 function tryToChangeAirplaneLocation(layer, flightId, latitude, longitude) {
-    if (layer.get('name') == flightId) {
-        layer.getSource().getFeatures()[0].setGeometry(
-            new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])));
+    if (layer.get("name") == flightId) {
+        let point = ol.proj.fromLonLat([longitude, latitude]);
+        let geoPoint = new ol.geom.Point(point);
+        layer.getSource().getFeatures()[0].setGeometry(geoPoint);
         return;
     }
 }
@@ -133,28 +151,32 @@ function deleteAirplane(flightId, update) {
 // get the layer with the given name
 function getLayer(name) {
     let myLayer;
-    map.getLayers().forEach(function (layer) {
-        if (layer.get('name') == name) {
+    let layers = generateLayers(map);
+    let layer;
+    for (layer of layers) {
+        if (layer.get("name") == name) {
             myLayer = layer;
         }
-    });
+    }
     return myLayer;
 }
 
 // mark the airplane with the given name
 function markAirplane(data, name, source) {
     deleteAirplane(name, true);
-    let newAirplane = addAirplane(name, source, 'Images/markedAirplane.png', 0.1);
+    let newAirplane = addAirplane(name, source,
+        "Images/markedAirplane.png", 0.1);
     // get a triple of latitude, longitude and end time
     let endInfo = getEndInformation(data);
     // adds the details of the flight to the details table
-    let tr = "<tr id=\"flightDetailsRow\"><td>[" + data.initial_location.latitude +
-             "," + data.initial_location.longitude + "]</td>" +
-             "<td>[" + endInfo[0] + "," + endInfo[1] + "]</td>" +
-             "<td>" + data.initial_location.date_time + "</td>" +
-             "<td>" + endInfo[2] + "</td>" +
-             "<td>" + data.company_name + "</td>" +
-             "<td>" + data.passengers + "</td></tr>";
+    let tr = "<tr id=\"flightDetailsRow\"><td>[" +
+        data.initial_location.latitude +
+        "," + data.initial_location.longitude + "]</td>" +
+        "<td>[" + endInfo[0] + "," + endInfo[1] + "]</td>" +
+        "<td>" + data.initial_location.date_time + "</td>" +
+        "<td>" + endInfo[2] + "</td>" +
+        "<td>" + data.company_name + "</td>" +
+        "<td>" + data.passengers + "</td></tr>";
     let flightDetailsRow = document.getElementById("flightDetailsRow");
     if (flightDetailsRow) {
         $("#flightDetailsRow").replaceWith(tr);
@@ -175,10 +197,11 @@ function unmarkAirplane(update) {
     if (currentMarked == null) {
         return;
     }
-    let name = currentMarked.get('name');
+    let name = currentMarked.get("name");
     let previous = currentMarked;
     deleteAirplane(name, update);
-    addAirplane(name, previous.getSource(), defaultAirplaneImage, defaultAirplaneScale);
+    let resource = previous.getSource();
+    addAirplane(name, resource, defaultAirplaneImage, defaultAirplaneScale);
 }
 
 // empty the current marked flight from the map and tables
@@ -186,7 +209,7 @@ function emptyCurrentMarked(update) {
     if (!update) {
         $("#FlightDetailsBody").empty();
     }
-    let id = currentMarked.get('name');
+    let id = currentMarked.get("name");
     let myFlightsRow = document.getElementById(id);
     // unmark the flight row in the flights table
     myFlightsRow.style.backgroundColor = "";
@@ -198,17 +221,20 @@ function emptyCurrentMarked(update) {
 // draw the given flight data route lines on the map
 function drawRouteLines(data) {
     let pointsArr = [];
-    pointsArr.push(ol.proj.fromLonLat([data.initial_location.longitude,
-    data.initial_location.latitude]));
-    data.segments.forEach(function (segment) {
-        pointsArr.push(ol.proj.fromLonLat([segment.longitude, segment.latitude]));
-    });
+    let point = ol.proj.fromLonLat([data.initial_location.longitude,
+    data.initial_location.latitude]);
+    pointsArr.push(point);
+    let segment;
+    for (segment of data.segments) {
+        point = ol.proj.fromLonLat([segment.longitude, segment.latitude]);
+        pointsArr.push(point);
+    }
     let lineStyle = [
         new ol.style.Style({
             stroke: new ol.style.Stroke({
-                color: '#5162cb',
+                color: "#5162cb",
                 lineDash: [4, 8],
-                lineCap: 'square',
+                lineCap: "square",
                 width: 5
             })
         })
@@ -219,7 +245,7 @@ function drawRouteLines(data) {
                 geometry: new ol.geom.LineString(pointsArr)
             })]
         }),
-        name: 'lines'
+        name: "lines"
     });
     layer.setStyle(lineStyle);
     map.getLayers().insertAt(1, layer);
@@ -236,11 +262,12 @@ function removeRouteLines() {
 function getEndInformation(data) {
     let totalSeconds = 0;
     let location;
-    data.segments.forEach(function (segment) {
+    let segment;
+    for (segment of data.segments) {
         location = getSegmentLocation(segment);
         totalSeconds += segment.timespan_seconds;
-    });
-    endTime = convertTime(data.initial_location.date_time, totalSeconds);
+    }
+    let endTime = convertTime(data.initial_location.date_time, totalSeconds);
     let latitude = location[0];
     let longitude = location[1];
     return [latitude, longitude, endTime];

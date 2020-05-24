@@ -1,13 +1,16 @@
-﻿// the main get flights loop
+﻿
+
+// the main get flights loop
 async function flightsLoop() {
-    while (true) {
+    const run = true;
+    while (run) {
         // get flights every 1 second
         getFlightsFunc();
         await sleep(1000);
     }
 }
 
-var flightsArr = [];
+let flightsArr = [];
 function getFlightsFunc() {
     // get the current date and time
     let dateAndTime = makeDateAndTime();
@@ -26,13 +29,13 @@ function analyzeFlightsData(data, dummyArr) {
         printError("Received invalid flight");
         return;
     }
-    data.forEach(function (flight) {
+    for (let flight of data) {
         forEachFlightFunc(flight, dummyArr);
-    });
+    }
     // check if any flights needs to be deleted from the map and tables
-    flightsArr.forEach(function (item) {
+    for (let item of flightsArr) {
         forEachFlightsArrRemoveFunc(item, dummyArr);
-    });
+    }
     flightsArr = dummyArr.slice();
 }
 
@@ -63,11 +66,11 @@ function addFlightToMapAndTables(flight, dummyArr) {
     let company = flight.company_name;
     let exist = false;
     // check if the flight already exists
-    flightsArr.forEach(function (item) {
+    for (let item of flightsArr) {
         if (forEachFlightsArrChangeLocation(item, id, latitude, longitude)) {
             exist = true;
         }
-    });
+    }
     // if need to add new flight
     if (!exist) {
         // adds the flight to the relevant table
@@ -95,7 +98,7 @@ function addFlightToMapAndTables(flight, dummyArr) {
 }
 
 // if the given item has the given id so change his location and return true
-function forEachFlightsArrChangeLocation(item, id, latitude, longitude, exist) {
+function forEachFlightsArrChangeLocation(item, id, latitude, longitude) {
     if (item[0] == id) {
         item[1] = true;
         changeAirplaneLocation(id, latitude, longitude);
@@ -108,7 +111,7 @@ function forEachFlightsArrChangeLocation(item, id, latitude, longitude, exist) {
 // deletes the given flight id
 function deleteByButton(id) {
     event.stopPropagation();
-    if (currentMarked != null && currentMarked.get('name') == id) {
+    if ((currentMarked != null) && (currentMarked.get('name') == id)) {
         emptyCurrentMarked(false);
     }
     deleteFlightFunc(id);
