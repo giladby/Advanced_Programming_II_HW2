@@ -118,8 +118,7 @@ namespace FlightControlWeb.Models
             foreach (Server server in serversList)
             {
                 // add a task to the task array
-                tasks[i] = Task.Factory.StartNew(() =>
-                {
+                tasks[i] = Task.Factory.StartNew(() => {
                     try
                     {
                         // the task adds all the flights of that server
@@ -130,8 +129,7 @@ namespace FlightControlWeb.Models
                         failed = true;
                         myExternalFlights = new ArrayList();
                         return;
-                    }
-                });
+                    }});
                 i++;
             }
             // wait for all the tasks to finish
@@ -152,19 +150,25 @@ namespace FlightControlWeb.Models
                 // lock the access to the flight ids dictionary
                 lock (dictLock)
                 {
-                    var externalFlightIds = GetExternalFlightIds();
-                    string id = flight.FlightId;
-                    if (!externalFlightIds.ContainsKey(id))
-                    {
-                        externalFlightIds[id] = server;
-                        SaveExternalFlightIds(externalFlightIds);
-                    }
+                    SaveServerByNewFlightId(server, flight);
                 }
             }
             // lock the access to the flights list
             lock (listLock)
             {
                 myExternalFlights.AddRange(serverFlights);
+            }
+        }
+
+        // add the server to the flight ids dictionary if the flight id is new
+        private void SaveServerByNewFlightId(Server server, Flight flight)
+        {
+            var externalFlightIds = GetExternalFlightIds();
+            string id = flight.FlightId;
+            if (!externalFlightIds.ContainsKey(id))
+            {
+                externalFlightIds[id] = server;
+                SaveExternalFlightIds(externalFlightIds);
             }
         }
 
@@ -231,9 +235,6 @@ namespace FlightControlWeb.Models
         {
             bool deleted = false;
             var serversList = GetServersList();
-            var externalFlightIds = GetExternalFlightIds();
-            // create a temp dictionary to iterate on
-            var tempFlightIds = GetExternalFlightIds();
             Server serverToDelete = null;
             // search for the server to be deleted
             foreach (Server server in serversList)
@@ -247,20 +248,29 @@ namespace FlightControlWeb.Models
             // if the server was found
             if (serverToDelete != null)
             {
-                // deletes all instances of the server to be deleted from the dictionary
-                foreach (KeyValuePair<string, Server> entry in tempFlightIds)
-                {
-                    if (entry.Value == serverToDelete)
-                    {
-                        externalFlightIds.Remove(entry.Key);
-                    }
-                }
-                SaveExternalFlightIds(externalFlightIds);
+                RemoveServerFromDictionary(serverToDelete);
                 serversList.Remove(serverToDelete);
                 SaveServersList(serversList);
                 deleted = true;
             }
             return deleted;
+        }
+
+        // remove the given server instances from the flight ids dictionary
+        private void RemoveServerFromDictionary(Server serverToDelete)
+        {
+            var externalFlightIds = GetExternalFlightIds();
+            // create a temp dictionary to iterate on
+            var tempFlightIds = GetExternalFlightIds();
+            // deletes all instances of the server to be deleted from the dictionary
+            foreach (KeyValuePair<string, Server> entry in tempFlightIds)
+            {
+                if (entry.Value == serverToDelete)
+                {
+                    externalFlightIds.Remove(entry.Key);
+                }
+            }
+            SaveExternalFlightIds(externalFlightIds);
         }
     }
 }

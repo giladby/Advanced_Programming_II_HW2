@@ -27,21 +27,29 @@ function displayMap() {
     });
     // when the map is being clicked
     map.on("click", function (e) {
-        let isMapLayer = true;
-        let found = false;
-        map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
-            // if this is a flight route
-            if (layer.get('name') == 'lines' || found) {
-                return;
-            }
-            isMapLayer = false;
-            tryMarkAirplane(layer.get('name'), layer.getSource());
-            found = true;
-        })
-        if (isMapLayer) {
-            unmarkAirplane(false);
-        }
+        MapClickOn(e);
     });
+}
+
+function MapClickOn(e) {
+    let isMapLayer = { flag: true };
+    let found = { flag: false };
+    map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
+        HandleLayerAtPixel(layer, isMapLayer, found);
+    })
+    if (isMapLayer.flag) {
+        unmarkAirplane(false);
+    }
+}
+
+function HandleLayerAtPixel(layer, isMapLayer, found) {
+    // if this is a flight route or the layer was already found
+    if (layer.get('name') == 'lines' || found.flag) {
+        return;
+    }
+    isMapLayer.flag = false;
+    tryMarkAirplane(layer.get('name'), layer.getSource());
+    found.flag = true;
 }
 
 // trying to mark the airplane with the given name
@@ -57,15 +65,20 @@ function tryMarkAirplane(name, source) {
 function getFlightPlanAndMark(flightId, source) {
     let flightPlanUrl = "../api/FlightPlan/" + flightId;
     $.get(flightPlanUrl, function (data) {
-        if (!isFlightPlanValid(data)) {
-            printError("Received invalid flight plan");
-            return;
-        }
-        // mark the airplane of the flight plan that was received
-        markAirplane(data, flightId, source);
+        HandleFlightPlanData(data, flightId, source);
     }).fail(function (error) {
         printError(error.responseText);
     });
+}
+
+function HandleFlightPlanData(data, flightId, source) {
+    // if the flight plan is invalid
+    if (!isFlightPlanValid(data)) {
+        printError("Received invalid flight plan");
+    } else {
+        // mark the airplane of the flight plan that was received
+        markAirplane(data, flightId, source);
+    }
 }
 
 function createSource(latitude, longitude) {
@@ -95,12 +108,17 @@ function addAirplane(flightId, source, image, scale) {
 // change the airplane location to the given coordinates
 function changeAirplaneLocation(flightId, latitude, longitude) {
     map.getLayers().forEach(function (layer) {
-        if (layer.get('name') == flightId) {
-            layer.getSource().getFeatures()[0].setGeometry(
-                new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])));
-            return;
-        }
+        tryToChangeAirplaneLocation(layer, flightId, latitude, longitude);
     })
+}
+
+// change location if the given layer has the given flight id
+function tryToChangeAirplaneLocation(layer, flightId, latitude, longitude) {
+    if (layer.get('name') == flightId) {
+        layer.getSource().getFeatures()[0].setGeometry(
+            new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])));
+        return;
+    }
 }
 
 // delete the airplane with the given id
@@ -118,7 +136,6 @@ function getLayer(name) {
     map.getLayers().forEach(function (layer) {
         if (layer.get('name') == name) {
             myLayer = layer;
-            return;
         }
     });
     return myLayer;
@@ -218,13 +235,17 @@ function removeRouteLines() {
 // returns a triple of latitude, longitude and end time of the given flight data
 function getEndInformation(data) {
     let totalSeconds = 0;
-    let longitude;
-    let latitude;
+    let location;
     data.segments.forEach(function (segment) {
-        latitude = segment.latitude;
-        longitude = segment.longitude;
+        location = getSegmentLocation(segment);
         totalSeconds += segment.timespan_seconds;
     });
     endTime = convertTime(data.initial_location.date_time, totalSeconds);
+    let latitude = location[0];
+    let longitude = location[1];
     return [latitude, longitude, endTime];
+}
+
+function getSegmentLocation(segment) {
+    return [segment.latitude, segment.longitude];
 }

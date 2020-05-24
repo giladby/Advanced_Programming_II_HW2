@@ -62,7 +62,8 @@ namespace XUnitFlightController
                 // make the function throw an exception
                 flightsMock.Setup(flightsMock =>
                 flightsMock.GetFlightsByTime(dateTime)).Throws(new Exception());
-            } else
+            }
+            else
             {
                 // make the function return the flights array
                 flightsMock.Setup(flightsMock =>

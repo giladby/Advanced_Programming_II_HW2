@@ -25,6 +25,7 @@ namespace FlightControlWeb
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // add a memory cache
             services.AddMemoryCache();
             services.AddControllers();
             // add the 2 managers

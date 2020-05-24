@@ -35,26 +35,7 @@ namespace FlightControlWeb.Controllers
                 if (flightPlan == null)
                 {
                     // trying to get the flight plan from the servers
-                    Tuple<bool, FlightPlan> result = await Task.Run(
-                        () => serversManager.GetExternalPlan(id));
-                    // if the flight plan was not found 
-                    if (result == null)
-                    {
-                        return NotFound("Flight plan wasn't found");
-                    }
-                    bool failed = result.Item1;
-                    FlightPlan externalFlightPlan = result.Item2;
-                    // if the request to the servers failed
-                    if (failed)
-                    {
-                        return BadRequest("Failed receiving flight plan from server");
-                    }
-                    // if the flight plan was not found 
-                    if (externalFlightPlan == null)
-                    {
-                        return NotFound("Flight plan wasn't found");
-                    }
-                    return Ok(externalFlightPlan);
+                    return await TryGetFlightPlanFromServers(id);
                 } else
                 {
                     return Ok(flightPlan);
@@ -64,6 +45,31 @@ namespace FlightControlWeb.Controllers
             {
                 return BadRequest("Failed receiving flight plan");
             }
+        }
+
+        // trying to get the flight plan of the given id from the servers
+        private async Task<ActionResult> TryGetFlightPlanFromServers(string id)
+        {
+            Tuple<bool, FlightPlan> result = await Task.Run(
+                () => serversManager.GetExternalPlan(id));
+            // if the flight plan was not found 
+            if (result == null)
+            {
+                return NotFound("Flight plan wasn't found");
+            }
+            bool failed = result.Item1;
+            FlightPlan externalFlightPlan = result.Item2;
+            // if the request to the servers failed
+            if (failed)
+            {
+                return BadRequest("Failed receiving flight plan from server");
+            }
+            // if the flight plan was not found 
+            if (externalFlightPlan == null)
+            {
+                return NotFound("Flight plan wasn't found");
+            }
+            return Ok(externalFlightPlan);
         }
 
         // POST: api/FlightPlan

@@ -15,31 +15,44 @@ function getFlightsFunc() {
     let flightUrl = "../api/Flights?relative_to=" + dateAndTime + "&sync_all";
     // send a flights 'GET' request with the current date and time to the server
     $.get(flightUrl, function (data) {
-        if (!data) {
-            printError("Received invalid flight");
-            return;
-        } 
-        data.forEach(function (flight) {
-            if (!isFlightValid) {
-                printError("Received invalid flight");
-                return;
-            }
-            // add that flight to the map and to the relevant table
-            addFlightToMapAndTables(flight, dummyArr);
-        });
-        // check if any flights needs to be deleted from the map and tables
-        flightsArr.forEach(function (item) {
-            if (!item[1]) {
-                deleteAirplane(item[0], false);
-                $("#" + item[0]).remove();
-            } else {
-                dummyArr.push([item[0], false]);
-            }
-        });
-        flightsArr = dummyArr.slice();
+        analyzeFlightsData(data, dummyArr);
     }).fail(function (error) {
         printError(error.responseText);
     });
+}
+
+function analyzeFlightsData(data, dummyArr) {
+    if (!data) {
+        printError("Received invalid flight");
+        return;
+    }
+    data.forEach(function (flight) {
+        forEachFlightFunc(flight, dummyArr);
+    });
+    // check if any flights needs to be deleted from the map and tables
+    flightsArr.forEach(function (item) {
+        forEachFlightsArrRemoveFunc(item, dummyArr);
+    });
+    flightsArr = dummyArr.slice();
+}
+
+function forEachFlightFunc(flight, dummyArr) {
+    if (!isFlightValid(flight)) {
+        printError("Received invalid flight");
+        return;
+    }
+    // add that flight to the map and to the relevant table
+    addFlightToMapAndTables(flight, dummyArr);
+}
+
+function forEachFlightsArrRemoveFunc(item, dummyArr) {
+    // if this flight needs to be removed
+    if (!item[1]) {
+        deleteAirplane(item[0], false);
+        $("#" + item[0]).remove();
+    } else {
+        dummyArr.push([item[0], false]);
+    }
 }
 
 function addFlightToMapAndTables(flight, dummyArr) {
@@ -51,11 +64,8 @@ function addFlightToMapAndTables(flight, dummyArr) {
     let exist = false;
     // check if the flight already exists
     flightsArr.forEach(function (item) {
-        if (item[0] == id) {
-            item[1] = true;
+        if (forEachFlightsArrChangeLocation(item, id, latitude, longitude)) {
             exist = true;
-            changeAirplaneLocation(id, latitude, longitude);
-            return;
         }
     });
     // if need to add new flight
@@ -81,6 +91,17 @@ function addFlightToMapAndTables(flight, dummyArr) {
         }
         dummyArr.push([id, false]);
         addAirplane(id, source, defaultAirplaneImage, defaultAirplaneScale);
+    }
+}
+
+// if the given item has the given id so change his location and return true
+function forEachFlightsArrChangeLocation(item, id, latitude, longitude, exist) {
+    if (item[0] == id) {
+        item[1] = true;
+        changeAirplaneLocation(id, latitude, longitude);
+        return true;
+    } else {
+        return false;
     }
 }
 

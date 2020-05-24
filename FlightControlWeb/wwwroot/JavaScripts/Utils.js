@@ -40,9 +40,9 @@ function isFlightValid(flight) {
     if (!flight) {
         return false;
     }
-    if (!flight.flight_id || (flightPlan.longitude == null) || (flightPlan.latitude == null)
-        || (flightPlan.passengers == null) || !flight.company_name
-        || !flight.date_time || (flightPlan.is_external == null)) {
+    if (!flight.flight_id || (flight.longitude == null) || (flight.latitude == null)
+        || (flight.passengers == null) || !flight.company_name || !flight.date_time
+        || (flight.is_external == null)) {
         return false;
     }
     return true;
