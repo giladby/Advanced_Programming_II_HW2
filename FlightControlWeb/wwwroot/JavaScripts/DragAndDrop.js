@@ -1,4 +1,5 @@
-﻿function dragAndDropFileController(selector, onDropCallback) {
+﻿// drag and drop functionality, also does image visibility toggle
+function dragAndDropFileController(selector, onDropCallback) {
     let el_ = document.getElementById("flightsList");
     let image = document.getElementById("dragAndDropImage");
     this.dragenter = function (e) {
@@ -29,6 +30,7 @@
     image.addEventListener('drop', this.drop, false);
 }
 
+// get a file into the drag and drop zone and send it to the server
 function dragAndDropFunc() {
     new dragAndDropFileController('body', function (files) {
         let f = files[0];

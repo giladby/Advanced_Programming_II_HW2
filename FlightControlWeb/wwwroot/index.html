@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <!--favicon-->
     <link rel="shortcut icon" type="image/x-icon" href="Images/favicon.ico" />
+    <!--map-->
     <link rel="stylesheet" href="OpenLayersMap/ol.css" type="text/css" />
+    <script src="OpenLayersMap/ol.js"></script>
     <!--jquery-->
     <script src="jQuery/jquery-3.5.0.js"></script>
     <script src="jQuery/jquery-3.5.0.min.js"></script>
@@ -17,13 +20,13 @@
     <script src="JavaScripts/DeleteFlight.js"></script>
     <script src="JavaScripts/MapFeatures.js"></script>
     <script src="JavaScripts/Utils.js"></script>
-    <!--map-->
-    <script src="OpenLayersMap/ol.js"></script>
-    <title>FlightControl</title>
     <!--style-->
     <link rel="stylesheet" href="Styles.css">
+    <!--page title-->
+    <title>FlightControl</title>
 </head>
 <body>
+    <!--page elements-->
     <div id="errBox"></div>
     <div class="row emptyRow"></div>
     <div class="row">
@@ -38,8 +41,8 @@
                     <table class="table">
                         <thead class="detailsThead text-white">
                             <tr>
-                                <th>Starting Location [lat,long]</th>
-                                <th>Ending Location [lat,long]</th>
+                                <th>Starting Location [Lat,Long]</th>
+                                <th>Ending Location [Lat,Long]</th>
                                 <th>Starting Time (UTC)</th>
                                 <th>Ending Time (UTC)</th>
                                 <th>Company</th>

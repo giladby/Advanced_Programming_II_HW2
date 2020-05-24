@@ -1,4 +1,5 @@
 ﻿let flightPlanUrl = "../api/FlightPlan";
+// send a 'POST' request with the given flight plan to the server
 function addFlightPlanFunc(flightPlan) {
     $.ajax({
         type: 'post',
