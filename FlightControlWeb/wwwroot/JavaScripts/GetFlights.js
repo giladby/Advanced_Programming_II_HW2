@@ -69,6 +69,7 @@ function addFlightToMapAndTables(flight, dummyArr) {
     for (let item of flightsArr) {
         if (forEachFlightsArrChangeLocation(item, id, latitude, longitude)) {
             exist = true;
+            break;
         }
     }
     // if need to add new flight

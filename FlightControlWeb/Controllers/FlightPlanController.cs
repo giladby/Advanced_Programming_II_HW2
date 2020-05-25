@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FlightControlWeb.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 
 namespace FlightControlWeb.Controllers
 {
@@ -74,16 +76,31 @@ namespace FlightControlWeb.Controllers
 
         // POST: api/FlightPlan
         [HttpPost]
-        public ActionResult AddFlightPlan([FromBody] FlightPlan flightPlan)
+        public ActionResult AddFlightPlan([FromBody] JsonElement FlightPlanJson)
         {
+            FlightPlan flightPlan;
+            string FlightPlanString = FlightPlanJson.ToString();
+            string error = "Received invalid flight plan";
+            if (!myFlightsManager.IsFlightPlanJsonValid(FlightPlanJson))
+            {
+                return BadRequest(error);
+            }
+            try
+            {
+                flightPlan = JsonConvert.DeserializeObject<FlightPlan>(FlightPlanString);
+            }
+            catch
+            {
+                return BadRequest(error);
+            }
             if (myFlightsManager.AddFlightPlan(flightPlan))
             {
                 return Ok();
-            } else
-            {
-                return BadRequest("Received invalid flight plan");
             }
-            
+            else
+            {
+                return BadRequest(error);
+            }
         }
     }
 }

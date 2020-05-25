@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FlightControlWeb.Models
@@ -18,5 +19,7 @@ namespace FlightControlWeb.Models
         public Flight GetFlight(FlightPlan flightPlan, DateTime dateTime);
         // get all the flights relative to the given dateTime
         public ArrayList GetFlightsByTime(DateTime dateTime);
+        // check if the given flight plan Json object is valid
+        public bool IsFlightPlanJsonValid(JsonElement FlightPlanJson);
     }
 }

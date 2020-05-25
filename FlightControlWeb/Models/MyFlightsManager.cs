@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FlightControlWeb.Models
@@ -248,6 +250,63 @@ namespace FlightControlWeb.Models
                 }
             }
             return flights;
+        }
+
+        // check if the given flight plan Json object is valid
+        public bool IsFlightPlanJsonValid(JsonElement FlightPlanJson)
+        {
+            if(!(FlightPlanJson.TryGetProperty("passengers", out JsonElement passengers)
+                && FlightPlanJson.TryGetProperty("company_name", out JsonElement companyName)
+                && FlightPlanJson.TryGetProperty("initial_location", out JsonElement initialLocation)
+                && FlightPlanJson.TryGetProperty("segments", out JsonElement segments)))
+            {
+                return false;
+            }
+
+            if(!(initialLocation.TryGetProperty("longitude", out JsonElement initLongitude)
+                && initialLocation.TryGetProperty("latitude", out JsonElement initLatitude)
+                && initialLocation.TryGetProperty("date_time", out JsonElement dateTime)))
+            {
+                return false;
+            }
+            try
+            {
+                var segmentsArr = JArray.Parse(segments.ToString());
+
+                foreach(var segment in segmentsArr)
+                {
+                    bool latitude = false;
+                    bool longitude = false;
+                    bool time = false;
+                    var arr = segment.ToArray();
+                    foreach (JProperty element in arr)
+                    {
+                        switch(element.Name)
+                        {
+                            case "longitude":
+                                longitude = true;
+                                break;
+                            case "latitude":
+                                latitude = true;
+                                break;
+                            case "timespan_seconds":
+                                time = true;
+                                break;
+                            default:
+                                return false;
+                        }
+                    }
+                    if(!(latitude && longitude && time))
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
