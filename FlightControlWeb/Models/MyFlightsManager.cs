@@ -252,51 +252,53 @@ namespace FlightControlWeb.Models
             return flights;
         }
 
-        // check if the given flight plan Json object is valid
+        // check if the given flight plan json object is valid
         public bool IsFlightPlanJsonValid(JsonElement FlightPlanJson)
         {
-            if(!(FlightPlanJson.TryGetProperty("passengers", out JsonElement passengers)
+            // check that all properties exist
+            if (!(FlightPlanJson.TryGetProperty("passengers", out JsonElement passengers)
                 && FlightPlanJson.TryGetProperty("company_name", out JsonElement companyName)
-                && FlightPlanJson.TryGetProperty("initial_location", out JsonElement initialLocation)
+                && FlightPlanJson.TryGetProperty("initial_location", out JsonElement initLocation)
                 && FlightPlanJson.TryGetProperty("segments", out JsonElement segments)))
             {
                 return false;
             }
-
-            if(!(initialLocation.TryGetProperty("longitude", out JsonElement initLongitude)
-                && initialLocation.TryGetProperty("latitude", out JsonElement initLatitude)
-                && initialLocation.TryGetProperty("date_time", out JsonElement dateTime)))
+            // check that the initial location properties exist
+            if (!(initLocation.TryGetProperty("longitude", out JsonElement initLongitude)
+                && initLocation.TryGetProperty("latitude", out JsonElement initLatitude)
+                && initLocation.TryGetProperty("date_time", out JsonElement dateTime)))
             {
                 return false;
             }
+            // trying to parse the segments into an array and each segment to segment elements
             try
             {
-                var segmentsArr = JArray.Parse(segments.ToString());
-
-                foreach(var segment in segmentsArr)
+                var segmentsArray = JArray.Parse(segments.ToString());
+                // for each segment, check that all of his properties exist
+                foreach (var segment in segmentsArray)
                 {
-                    bool latitude = false;
-                    bool longitude = false;
-                    bool time = false;
-                    var arr = segment.ToArray();
-                    foreach (JProperty element in arr)
+                    bool longitudeFlag = false;
+                    bool latitudeFlag = false;
+                    bool timespanFlag = false;
+                    var segmentElements = segment.ToArray();
+                    foreach (JProperty element in segmentElements)
                     {
                         switch(element.Name)
                         {
                             case "longitude":
-                                longitude = true;
+                                longitudeFlag = true;
                                 break;
                             case "latitude":
-                                latitude = true;
+                                latitudeFlag = true;
                                 break;
                             case "timespan_seconds":
-                                time = true;
+                                timespanFlag = true;
                                 break;
                             default:
                                 return false;
                         }
                     }
-                    if(!(latitude && longitude && time))
+                    if (!(longitudeFlag && latitudeFlag && timespanFlag))
                     {
                         return false;
                     }

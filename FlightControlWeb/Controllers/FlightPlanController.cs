@@ -81,18 +81,21 @@ namespace FlightControlWeb.Controllers
             FlightPlan flightPlan;
             string FlightPlanString = FlightPlanJson.ToString();
             string error = "Received invalid flight plan";
+            // check if the flight plan json object is valid
             if (!myFlightsManager.IsFlightPlanJsonValid(FlightPlanJson))
             {
                 return BadRequest(error);
             }
             try
             {
+                // trying to deserialize the json object into a flight plan object
                 flightPlan = JsonConvert.DeserializeObject<FlightPlan>(FlightPlanString);
             }
             catch
             {
                 return BadRequest(error);
             }
+            // trying to add the flight plan
             if (myFlightsManager.AddFlightPlan(flightPlan))
             {
                 return Ok();

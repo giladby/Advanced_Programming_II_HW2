@@ -19,7 +19,7 @@ namespace FlightControlWeb.Models
         public Flight GetFlight(FlightPlan flightPlan, DateTime dateTime);
         // get all the flights relative to the given dateTime
         public ArrayList GetFlightsByTime(DateTime dateTime);
-        // check if the given flight plan Json object is valid
+        // check if the given flight plan json object is valid
         public bool IsFlightPlanJsonValid(JsonElement FlightPlanJson);
     }
 }
