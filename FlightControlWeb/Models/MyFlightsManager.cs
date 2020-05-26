@@ -273,42 +273,92 @@ namespace FlightControlWeb.Models
             // trying to parse the segments into an array and each segment to segment elements
             try
             {
-                var segmentsArray = JArray.Parse(segments.ToString());
-                // for each segment, check that all of his properties exist
-                foreach (var segment in segmentsArray)
+                double latitude = initLatitude.GetDouble();
+                double longitude = initLongitude.GetDouble();
+                // check that the latitude and longitude are in the valid range
+                if (!(IsLatitudeValid(latitude) && IsLongitudeValid(longitude)))
                 {
-                    bool longitudeFlag = false;
-                    bool latitudeFlag = false;
-                    bool timespanFlag = false;
-                    var segmentElements = segment.ToArray();
-                    foreach (JProperty element in segmentElements)
-                    {
-                        switch(element.Name)
-                        {
-                            case "longitude":
-                                longitudeFlag = true;
-                                break;
-                            case "latitude":
-                                latitudeFlag = true;
-                                break;
-                            case "timespan_seconds":
-                                timespanFlag = true;
-                                break;
-                            default:
-                                return false;
-                        }
-                    }
-                    if (!(longitudeFlag && latitudeFlag && timespanFlag))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
+                var segmentsArray = JArray.Parse(segments.ToString());
+                return IsSegmentsArrayValid(segmentsArray);
             }
             catch
             {
                 return false;
             }
+        }
+
+        private bool IsSegmentsArrayValid(JArray segmentsArray)
+        {
+            // for each segment, check that all of his properties exist
+            foreach (var segment in segmentsArray)
+            {
+                if (!IsSegmentValid(segment))
+                {
+                    return false;
+                }
+            }
             return true;
+        }
+
+        // check that the given segment is valid
+        private bool IsSegmentValid(JToken segment)
+        {
+            double latitude;
+            double longitude;
+            bool longitudeFlag = false;
+            bool latitudeFlag = false;
+            bool timespanFlag = false;
+            // holds the latitude and longitude validation check
+            bool success = true;
+            var segmentElements = segment.ToArray();
+            if (segmentElements.Length != 3)
+            {
+                return false;
+            }
+            foreach (JProperty element in segmentElements)
+            {
+                switch (element.Name)
+                {
+                    case "longitude":
+                        longitudeFlag = true;
+                        longitude = (double)element.Value;
+                        // check if the given longitude is in the valid range
+                        success = success && IsLongitudeValid(longitude);
+                        break;
+                    case "latitude":
+                        latitudeFlag = true;
+                        latitude = (double)element.Value;
+                        // check if the given latitude is in the valid range
+                        success = success && IsLatitudeValid(latitude);
+                        break;
+                    case "timespan_seconds":
+                        timespanFlag = true;
+                        break;
+                    default:
+                        return false;
+                }
+            }
+            if (!(longitudeFlag && latitudeFlag && timespanFlag))
+            {
+                return false;
+            }
+            return success;
+        }
+
+        // check if the given latitude is in the valid range
+        private bool IsLatitudeValid(double latitude)
+        {
+            return ((latitude <= 90) && (latitude >= -90));
+        }
+
+        // check if the given longitude is in the valid range
+        private bool IsLongitudeValid(double longitude)
+        {
+            return ((longitude <= 180) && (longitude >= -180));
         }
     }
 }
+
+
