@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <!--favicon-->
+    <link rel="shortcut icon" type="image/x-icon" href="Images/favicon.ico" />
+    <!--map-->
+    <link rel="stylesheet" href="OpenLayersMap/ol.css" type="text/css" />
+    <script src="OpenLayersMap/ol.js"></script>
+    <!--jquery-->
+    <script src="jQuery/jquery-3.5.0.js"></script>
+    <script src="jQuery/jquery-3.5.0.min.js"></script>
+    <!--bootstrap-->
+    <link href="Bootstrap/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="Bootstrap/Scripts/bootstrap.min.js"></script>
+    <!--javascripts-->
+    <script src="JavaScripts/GetFlights.js"></script>
+    <script src="JavaScripts/AddFlightPlan.js"></script>
+    <script src="JavaScripts/DragAndDrop.js"></script>
+    <script src="JavaScripts/DeleteFlight.js"></script>
+    <script src="JavaScripts/MapFeatures.js"></script>
+    <script src="JavaScripts/Utils.js"></script>
+    <!--style-->
+    <link rel="stylesheet" href="Styles.css">
+    <!--page title-->
+    <title>FlightControl</title>
+</head>
+<body>
+    <!--page elements-->
+    <div id="errBox"></div>
+    <div class="row emptyRow"></div>
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-6">
+            <div class="row mapRow justify-content-center">
+                <div id="map" class="map"></div>
+            </div>
+            <div class="row detailsRow justify-content-center">
+                <h2 class="text-info">Flight Details</h2>
+                <div class="table myFlightDetailsTable">
+                    <table class="table">
+                        <thead class="detailsThead text-white">
+                            <tr>
+                                <th>Starting Location [Lat,Long]</th>
+                                <th>Ending Location [Lat,Long]</th>
+                                <th>Starting Time (UTC)</th>
+                                <th>Ending Time (UTC)</th>
+                                <th>Company</th>
+                                <th>Passangers</th>
+                            </tr>
+                        </thead>
+                        <tbody id="FlightDetailsBody" class="text-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="dragAndDropImage">
+                <img src="Images/dragAndDrop.png" class="dndImage img-fluid img-thumbnail" alt="Chania">
+            </div>
+            <div id="flightsList" class="row flightsRow justify-content-center">
+                <h2 class="text-warning">My Flights</h2>
+                <div id="flightsTable" class="table flightsTable">
+                    <table class="table">
+                        <thead class="thead">
+                            <tr>
+                                <th>Flight ID</th>
+                                <th>Company</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-warning bg-dark" id="flightsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row flightsRow justify-content-center">
+                <h2 class="text-warning">External Flights</h2>
+                <div id="externalTable" class="table flightsTable">
+                    <table class="table">
+                        <thead class="thead">
+                            <tr>
+                                <th>Flight ID</th>
+                                <th>Company</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-warning bg-dark" id="externalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+    <!--functionality-->
+    <script>
+        var image = document.getElementById("dragAndDropImage");
+        image.style.visibility = "hidden";
+        $("#myErrorMsg").fadeOut(0);
+        var dropZone = document.getElementById("flightsList");
+        dropZone.addEventListener('dragleave', dragAndDropFunc(), false);
+        let map;
+        let defaultAirplaneImage = 'Images/airplane.png';
+        let defaultAirplaneScale = 0.05;
+        displayMap();
+        flightsLoop();
+    </script>
+</body>
+</html>
