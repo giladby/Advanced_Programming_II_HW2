@@ -80,17 +80,27 @@ namespace FlightControlWeb.Models
         // get the flight plan with the given id from the given server
         private FlightPlan GetFlightPlanFromServer(Server server, string id)
         {
+            var myUtils = new Utils();
             string url = server.ServerURL + "/api/FlightPlan/" + id;
-            string flightPlan = GetSerializedObject(url);
-            if (flightPlan == "")
+            string flightPlanString = GetSerializedObject(url);
+            if (flightPlanString == "")
             {
                 return null;
             }
-
-
-
+            // make a jobject from the flight plan and check that its valid
+            var flightPlanObject = JObject.Parse(flightPlanString);
+            if (!myUtils.IsFlightPlanJObjectValid(flightPlanObject))
+            {
+                return null;
+            }
             // deserialize the serialized object to a flight plan object
-            return JsonConvert.DeserializeObject<FlightPlan>(flightPlan);
+            var flightPlan = JsonConvert.DeserializeObject<FlightPlan>(flightPlanString);
+            // check that the flight plan is valid
+            if (!myUtils.IsFlightPlanValid(flightPlan))
+            {
+                return null;
+            }
+            return flightPlan;
         }
 
         // get all the flights relative to the given dateTime from the given server
@@ -106,15 +116,22 @@ namespace FlightControlWeb.Models
             {
                 return new ArrayList();
             }
-
-            var flightsJson = JArray.Parse(flights);
-
-            if (myUtils.IsFlightArrayJsonValid(flightsJson))
+            // make a jarray from the flights and check that its valid
+            var flightsJArray = JArray.Parse(flights);
+            if (!myUtils.IsFlightsJArrayValid(flightsJArray))
             {
                 return new ArrayList();
             }
             // deserialize the serialized object to a flights list
             var flightsList = JsonConvert.DeserializeObject<List<Flight>>(flights);
+            // check that all flights are valid
+            foreach (var flight in flightsList)
+            {
+                if (!myUtils.IsFlightValid(flight))
+                {
+                    return new ArrayList();
+                }
+            }
             return new ArrayList(flightsList);
         }
 

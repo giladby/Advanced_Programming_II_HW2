@@ -10,28 +10,21 @@ namespace FlightControlWeb.Models
     
     public class Utils
     {
-        //check if the given flightsArray is valid
-        public bool IsFlightArrayJsonValid(JArray flightsArray)
+        // check if the given flights jarray is valid
+        public bool IsFlightsJArrayValid(JArray flightsArray)
         {
-            try
+            foreach (var flightJtoken in flightsArray)
             {
-                foreach (var flights in flightsArray)
+                if (!IsFlightJtokenValid(flightJtoken))
                 {
-                    if (!IsFlightJsonValid(flights))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
-            }
-            catch
-            {
-                return false;
             }
             return true;
         }
 
-        // check that the given flight is valid
-        private bool IsFlightJsonValid(JToken flightJson)
+        // check that the given flight jtoken is valid
+        private bool IsFlightJtokenValid(JToken flightJson)
         {
             double latitude;
             double longitude;
@@ -107,27 +100,7 @@ namespace FlightControlWeb.Models
             return true;
         }
 
-        // check if the given flight plan has valid parameters
-        public bool IsFlightPlanValid(FlightPlan flightPlan)
-        {
-            if (flightPlan == null)
-            {
-                return false;
-            }
-            if ((flightPlan.CompanyName == null) || (flightPlan.InitialLocation == null)
-                || (flightPlan.Segments == null))
-            {
-                return false;
-            }
-            if (flightPlan.InitialLocation.MyDateTime == null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-
-        // check if the given flight plan json object is valid
+        // check if the given flight plan jobject is valid
         public bool IsFlightPlanJObjectValid(JObject flightPlanJson)
         {
             // check that all properties exist
@@ -140,23 +113,14 @@ namespace FlightControlWeb.Models
             }
             var initialLocation = flightPlanJson["initial_location"];
             // check that the initial location properties exist
-            if (!(initialLocation.TryGetProperty("longitude", out JsonElement initLongitude)
-                && initialLocation.TryGetProperty("latitude", out JsonElement initLatitude)
-                && initialLocation.TryGetProperty("date_time", out JsonElement dateTime)))
+            if (!IsInitialLocationValid(initialLocation))
             {
                 return false;
             }
             // trying to parse the segments into an array and each segment to segment elements
             try
             {
-                double latitude = initLatitude.GetDouble();
-                double longitude = initLongitude.GetDouble();
-                // check that the latitude and longitude are in the valid range
-                if (!(IsLatitudeValid(latitude) && IsLongitudeValid(longitude)))
-                {
-                    return false;
-                }
-                var segmentsArray = JArray.Parse(segments.ToString());
+                var segmentsArray = (JArray)flightPlanJson["segments"];
                 return IsSegmentsArrayValid(segmentsArray);
             }
             catch
@@ -166,7 +130,7 @@ namespace FlightControlWeb.Models
         }
 
         // check that the given initial location is valid
-        private bool IsSegmentValid(JToken initialLocation)
+        private bool IsInitialLocationValid(JToken initialLocation)
         {
             double latitude;
             double longitude;
@@ -208,43 +172,6 @@ namespace FlightControlWeb.Models
                 return false;
             }
             return success;
-        }
-
-        // check if the given flight plan json object is valid
-        public bool IsFlightPlanJsonValid(JsonElement flightPlanJson)
-        {
-            // check that all properties exist
-            if (!(flightPlanJson.TryGetProperty("passengers", out JsonElement passengers)
-                && flightPlanJson.TryGetProperty("company_name", out JsonElement companyName)
-                && flightPlanJson.TryGetProperty("initial_location", out JsonElement initLocation)
-                && flightPlanJson.TryGetProperty("segments", out JsonElement segments)))
-            {
-                return false;
-            }
-            // check that the initial location properties exist
-            if (!(initLocation.TryGetProperty("longitude", out JsonElement initLongitude)
-                && initLocation.TryGetProperty("latitude", out JsonElement initLatitude)
-                && initLocation.TryGetProperty("date_time", out JsonElement dateTime)))
-            {
-                return false;
-            }
-            // trying to parse the segments into an array and each segment to segment elements
-            try
-            {
-                double latitude = initLatitude.GetDouble();
-                double longitude = initLongitude.GetDouble();
-                // check that the latitude and longitude are in the valid range
-                if (!(IsLatitudeValid(latitude) && IsLongitudeValid(longitude)))
-                {
-                    return false;
-                }
-                var segmentsArray = JArray.Parse(segments.ToString());
-                return IsSegmentsArrayValid(segmentsArray);
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         private bool IsSegmentsArrayValid(JArray segmentsArray)
@@ -303,6 +230,25 @@ namespace FlightControlWeb.Models
                 return false;
             }
             return success;
+        }
+
+        // check if the given flight plan has valid parameters
+        public bool IsFlightPlanValid(FlightPlan flightPlan)
+        {
+            if (flightPlan == null)
+            {
+                return false;
+            }
+            if ((flightPlan.CompanyName == null) || (flightPlan.InitialLocation == null)
+                || (flightPlan.Segments == null))
+            {
+                return false;
+            }
+            if (flightPlan.InitialLocation.MyDateTime == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         // check if the given latitude is in the valid range
