@@ -8,6 +8,8 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json;
 using System.Globalization;
+using System.Text.Json;
+using Newtonsoft.Json.Linq;
 
 namespace FlightControlWeb.Models
 {
@@ -84,6 +86,9 @@ namespace FlightControlWeb.Models
             {
                 return null;
             }
+
+
+
             // deserialize the serialized object to a flight plan object
             return JsonConvert.DeserializeObject<FlightPlan>(flightPlan);
         }
@@ -91,12 +96,20 @@ namespace FlightControlWeb.Models
         // get all the flights relative to the given dateTime from the given server
         private ArrayList GetFlightsFromServer(Server server, DateTime dateTime)
         {
+            var myUtils = new Utils();
             string dateTimeString = dateTime.ToString(
                 "s", DateTimeFormatInfo.InvariantInfo) + "Z";
             // creates a flights 'GET' request with a relative_to time
             string url = server.ServerURL + "/api/Flights?relative_to=" + dateTimeString;
             string flights = GetSerializedObject(url);
             if (flights == "")
+            {
+                return new ArrayList();
+            }
+
+            var flightsJson = JArray.Parse(flights);
+
+            if (myUtils.IsFlightArrayJsonValid(flightsJson))
             {
                 return new ArrayList();
             }

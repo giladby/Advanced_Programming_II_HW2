@@ -95,8 +95,9 @@ namespace FlightControlWeb.Models
         // add the given flight plan, return false if failed
         public bool AddFlightPlan(FlightPlan flightPlan)
         {
+            var myUtils = new Utils();
             // if the flight plan is invalid
-            if (!IsFlightPlanValid(flightPlan))
+            if (!myUtils.IsFlightPlanValid(flightPlan))
             {
                 return false;
             }
@@ -112,25 +113,6 @@ namespace FlightControlWeb.Models
                 }
             }
             AddFlightPlanToCache(flightPlan, id);
-            return true;
-        }
-
-        // check if the given flight plan has valid parameters
-        private bool IsFlightPlanValid(FlightPlan flightPlan)
-        {
-            if (flightPlan == null)
-            {
-                return false;
-            }
-            if ((flightPlan.CompanyName == null) || (flightPlan.InitialLocation == null)
-                || (flightPlan.Segments == null))
-            {
-                return false;
-            }
-            if (flightPlan.InitialLocation.MyDateTime == null)
-            {
-                return false;
-            }
             return true;
         }
 
@@ -250,113 +232,6 @@ namespace FlightControlWeb.Models
                 }
             }
             return flights;
-        }
-
-        // check if the given flight plan json object is valid
-        public bool IsFlightPlanJsonValid(JsonElement FlightPlanJson)
-        {
-            // check that all properties exist
-            if (!(FlightPlanJson.TryGetProperty("passengers", out JsonElement passengers)
-                && FlightPlanJson.TryGetProperty("company_name", out JsonElement companyName)
-                && FlightPlanJson.TryGetProperty("initial_location", out JsonElement initLocation)
-                && FlightPlanJson.TryGetProperty("segments", out JsonElement segments)))
-            {
-                return false;
-            }
-            // check that the initial location properties exist
-            if (!(initLocation.TryGetProperty("longitude", out JsonElement initLongitude)
-                && initLocation.TryGetProperty("latitude", out JsonElement initLatitude)
-                && initLocation.TryGetProperty("date_time", out JsonElement dateTime)))
-            {
-                return false;
-            }
-            // trying to parse the segments into an array and each segment to segment elements
-            try
-            {
-                double latitude = initLatitude.GetDouble();
-                double longitude = initLongitude.GetDouble();
-                // check that the latitude and longitude are in the valid range
-                if (!(IsLatitudeValid(latitude) && IsLongitudeValid(longitude)))
-                {
-                    return false;
-                }
-                var segmentsArray = JArray.Parse(segments.ToString());
-                return IsSegmentsArrayValid(segmentsArray);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool IsSegmentsArrayValid(JArray segmentsArray)
-        {
-            // for each segment, check that all of his properties exist
-            foreach (var segment in segmentsArray)
-            {
-                if (!IsSegmentValid(segment))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // check that the given segment is valid
-        private bool IsSegmentValid(JToken segment)
-        {
-            double latitude;
-            double longitude;
-            bool longitudeFlag = false;
-            bool latitudeFlag = false;
-            bool timespanFlag = false;
-            // holds the latitude and longitude validation check
-            bool success = true;
-            var segmentElements = segment.ToArray();
-            if (segmentElements.Length != 3)
-            {
-                return false;
-            }
-            foreach (JProperty element in segmentElements)
-            {
-                switch (element.Name)
-                {
-                    case "longitude":
-                        longitudeFlag = true;
-                        longitude = (double)element.Value;
-                        // check if the given longitude is in the valid range
-                        success = success && IsLongitudeValid(longitude);
-                        break;
-                    case "latitude":
-                        latitudeFlag = true;
-                        latitude = (double)element.Value;
-                        // check if the given latitude is in the valid range
-                        success = success && IsLatitudeValid(latitude);
-                        break;
-                    case "timespan_seconds":
-                        timespanFlag = true;
-                        break;
-                    default:
-                        return false;
-                }
-            }
-            if (!(longitudeFlag && latitudeFlag && timespanFlag))
-            {
-                return false;
-            }
-            return success;
-        }
-
-        // check if the given latitude is in the valid range
-        private bool IsLatitudeValid(double latitude)
-        {
-            return ((latitude <= 90) && (latitude >= -90));
-        }
-
-        // check if the given longitude is in the valid range
-        private bool IsLongitudeValid(double longitude)
-        {
-            return ((longitude <= 180) && (longitude >= -180));
         }
     }
 }

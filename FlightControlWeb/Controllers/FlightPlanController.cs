@@ -79,10 +79,11 @@ namespace FlightControlWeb.Controllers
         public ActionResult AddFlightPlan([FromBody] JsonElement FlightPlanJson)
         {
             FlightPlan flightPlan;
+            var myUtils = new Utils();
             string FlightPlanString = FlightPlanJson.ToString();
             string error = "Received invalid flight plan";
             // check if the flight plan json object is valid
-            if (!myFlightsManager.IsFlightPlanJsonValid(FlightPlanJson))
+            if (!myUtils.IsFlightPlanJsonValid(FlightPlanJson))
             {
                 return BadRequest(error);
             }
