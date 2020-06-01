@@ -116,23 +116,21 @@ namespace FlightControlWeb.Models
             {
                 return new ArrayList();
             }
-            // make a jarray from the flights and check that its valid
-            var flightsJArray = JArray.Parse(flights);
-            if (!myUtils.IsFlightsJArrayValid(flightsJArray))
-            {
-                return new ArrayList();
-            }
+            // make a jarray from the valid flights only
+            JArray flightsJArray = myUtils.GetValidFlightsJArray(JArray.Parse(flights));
             // deserialize the serialized object to a flights list
-            var flightsList = JsonConvert.DeserializeObject<List<Flight>>(flights);
-            // check that all flights are valid
+            var flightsList = JsonConvert.DeserializeObject<List<Flight>>(
+                flightsJArray.ToString());
+            // make an array with valid flights only
+            var array = new ArrayList();
             foreach (var flight in flightsList)
             {
-                if (!myUtils.IsFlightValid(flight))
+                if (myUtils.IsFlightValid(flight))
                 {
-                    return new ArrayList();
+                    array.Add(flight);
                 }
             }
-            return new ArrayList(flightsList);
+            return array;
         }
 
         // get all the flights relative to the given dateTime, return false if failed

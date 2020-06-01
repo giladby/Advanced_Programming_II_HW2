@@ -10,17 +10,18 @@ namespace FlightControlWeb.Models
     
     public class Utils
     {
-        // check if the given flights jarray is valid
-        public bool IsFlightsJArrayValid(JArray flightsArray)
+        // return an array with the valid flights only
+        public JArray GetValidFlightsJArray(JArray flightsArray)
         {
+            var array = new JArray();
             foreach (var flightJtoken in flightsArray)
             {
-                if (!IsFlightJtokenValid(flightJtoken))
+                if (IsFlightJtokenValid(flightJtoken))
                 {
-                    return false;
+                    array.Add(flightJtoken);
                 }
             }
-            return true;
+            return array;
         }
 
         // check that the given flight jtoken is valid
