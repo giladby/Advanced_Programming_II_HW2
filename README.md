@@ -6,7 +6,7 @@ showing flights routes on a world map and providing live information about the c
 In addition to the ability to track flights from this project server, the application can connect to other external servers
 and get information about their own flights.
 
-The client side is written with JavaScript, and designed with Bootstrap.
+The client side is written with JavaScript and designed with Bootstrap.
 The server side is written with C#.
 
 
