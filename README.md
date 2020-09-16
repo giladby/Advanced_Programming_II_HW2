@@ -11,7 +11,7 @@ The server side is written with C#.
 
 
 
-In addition, We implemented a unit test for the FlightsController class.
+In addition, we implemented a unit test for the FlightsController class.
 This unit test is testing the 'GetFlights' function of the FlightsController,
 this function is the main function of this controller.
 
