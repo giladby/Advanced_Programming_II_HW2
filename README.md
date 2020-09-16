@@ -2,7 +2,7 @@ Advanced_Programming_II_HW2
 
 In this project, we built a web application using ASP.NET core.
 This application is a flights control system,
-showing flight plans on a world map and providing live information about the current active flights.
+showing flights routes on a world map and providing live information about the current active flight plans.
 In addition to the ability to track flights from this project server, the application can connect to other external servers
 and get information about their own flights.
 
